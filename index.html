@@ -1,571 +1,123 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ConfirmLayer Competitor Intel</title>
-<style>
-  :root {
-    --bg0: #060a13;
-    --bg: #0a101d;
-    --card: #0d1526;
-    --card2: #111b30;
-    --line: rgba(148, 163, 184, 0.14);
-    --ink: #e9eff9;
-    --mut: #8fa0b8;
-    --dim: #64748f;
-    --teal: #2dd4bf;
-    --cyan: #38bdf8;
-    --amber: #fbbf24;
-    --green: #34d399;
-    --red: #f87171;
-    --purple: #a78bfa;
-    --radius: 14px;
-  }
-  * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
-    background: radial-gradient(1200px 500px at 20% -10%, rgba(45,212,191,0.07), transparent 60%),
-                radial-gradient(900px 420px at 90% 0%, rgba(56,189,248,0.06), transparent 55%),
-                var(--bg0);
-    color: var(--ink);
-    line-height: 1.55;
-    font-variant-numeric: tabular-nums;
-  }
-  a { color: var(--teal); text-decoration: none; }
-  a:hover { text-decoration: underline; }
-
-  /* ---------- top bar ---------- */
-  .topbar {
-    display: flex; align-items: center; gap: 0.9rem;
-    padding: 0.85rem 1.4rem;
-    border-bottom: 1px solid var(--line);
-    background: rgba(6, 10, 19, 0.82);
-    backdrop-filter: blur(10px);
-    position: sticky; top: 0; z-index: 30;
-  }
-  .mark {
-    width: 2.3rem; height: 2.3rem; border-radius: 10px; flex: 0 0 auto;
-    background: linear-gradient(135deg, #0d9488, #2dd4bf 55%, #38bdf8);
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 800; color: #04121a; font-size: 1rem; letter-spacing: 0.02em;
-  }
-  .topbar .title { line-height: 1.25; }
-  .topbar .title h1 { margin: 0; font-size: 1.12rem; letter-spacing: 0.01em; }
-  .topbar .title p { margin: 0; font-size: 0.78rem; color: var(--mut); }
-  .topbar .spacer { flex: 1; }
-  .live {
-    display: inline-flex; align-items: center; gap: 0.45rem;
-    font-size: 0.78rem; color: var(--mut);
-    border: 1px solid var(--line); border-radius: 999px; padding: 0.32rem 0.8rem;
-    background: rgba(13, 21, 38, 0.6); white-space: nowrap;
-  }
-  .live .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
-
-  /* ---------- tabs ---------- */
-  nav.tabs {
-    position: sticky; top: 60px; z-index: 29;
-    background: rgba(6, 10, 19, 0.82); backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--line);
-  }
-  nav.tabs .wrap { max-width: 1200px; margin: 0 auto; display: flex; gap: 0.25rem; padding: 0.55rem 1.4rem; overflow-x: auto; }
-  .tab-btn {
-    border: 1px solid transparent; background: none; cursor: pointer;
-    padding: 0.55rem 1.05rem; font-size: 0.9rem; font-weight: 600; color: var(--mut);
-    border-radius: 9px; white-space: nowrap;
-  }
-  .tab-btn:hover { color: var(--ink); background: rgba(148,163,184,0.08); }
-  .tab-btn.active { color: #04121a; background: var(--teal); }
-
-  main .wrap { max-width: 1200px; margin: 0 auto; padding: 1.6rem 1.4rem 3.5rem; }
-  .tab-panel { display: none; animation: rise 0.35s ease; }
-  .tab-panel.active { display: block; }
-  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-  .panel-head { margin: 0 0 1.1rem; }
-  .panel-head h2 { margin: 0 0 0.2rem; font-size: 1.35rem; letter-spacing: 0.01em; }
-  .panel-head p { margin: 0; color: var(--mut); font-size: 0.92rem; }
-
-  /* ---------- KPI tiles ---------- */
-  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.9rem; margin-bottom: 1.1rem; }
-  .kpi {
-    background: linear-gradient(180deg, var(--card2), var(--card));
-    border: 1px solid var(--line); border-radius: var(--radius);
-    padding: 1rem 1.1rem; position: relative; overflow: hidden;
-  }
-  .kpi::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--kpi-c, var(--teal)); }
-  .kpi .num { font-size: 1.9rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
-  .kpi .lbl { font-size: 0.76rem; color: var(--mut); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 0.25rem; }
-  .kpi .sub { font-size: 0.76rem; color: var(--dim); margin-top: 0.15rem; }
-
-  /* ---------- generic card ---------- */
-  .card {
-    background: linear-gradient(180deg, var(--card2), var(--card));
-    border: 1px solid var(--line); border-radius: var(--radius);
-    padding: 1.3rem 1.4rem; margin-bottom: 1.1rem;
-  }
-  .card h3 { margin: 0 0 0.35rem; font-size: 1.02rem; }
-  .card .hint { margin: 0 0 1rem; color: var(--mut); font-size: 0.86rem; }
-
-  /* ---------- funnel ---------- */
-  .funnel { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.7rem; }
-  .stage {
-    border: 1px solid var(--line); border-radius: 12px; padding: 1rem 1.05rem;
-    background: rgba(13, 21, 38, 0.55); cursor: pointer; transition: transform 0.15s ease, border-color 0.15s ease;
-  }
-  .stage:hover { transform: translateY(-2px); border-color: rgba(45, 212, 191, 0.45); }
-  .stage .s-num { font-size: 0.72rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.08em; }
-  .stage .s-name { font-weight: 700; margin: 0.15rem 0 0.4rem; }
-  .stage .s-count { font-size: 2rem; font-weight: 800; color: var(--stage-c, var(--ink)); line-height: 1; }
-  .dispo { display: flex; height: 6px; border-radius: 3px; overflow: hidden; background: rgba(148,163,184,0.12); margin: 0.7rem 0 0.5rem; }
-  .dispo span { display: block; height: 100%; }
-  .dispo .adv { background: var(--green); }
-  .dispo .pen { background: var(--amber); }
-  .dispo .dro { background: var(--red); }
-  .stage .s-meta { font-size: 0.76rem; color: var(--mut); }
-  .stage .s-meta b { color: var(--ink); }
-
-  /* ---------- pricing bars ---------- */
-  .pbar-row { display: grid; grid-template-columns: 150px 1fr 92px; gap: 0.8rem; align-items: center; padding: 0.5rem 0; border-bottom: 1px dashed rgba(148,163,184,0.12); }
-  .pbar-row:last-child { border-bottom: none; }
-  .pbar-row .who { font-weight: 600; font-size: 0.9rem; }
-  .pbar-track { height: 10px; border-radius: 5px; background: rgba(148,163,184,0.12); position: relative; }
-  .pbar-fill { position: absolute; top: 0; bottom: 0; border-radius: 5px; background: linear-gradient(90deg, #0d9488, var(--teal)); }
-  .pbar-row .val { font-size: 0.86rem; color: var(--mut); text-align: right; }
-  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.9rem; }
-  .chip { font-size: 0.78rem; border: 1px solid var(--line); border-radius: 999px; padding: 0.3rem 0.75rem; color: var(--mut); background: rgba(13,21,38,0.5); }
-  .chip b { color: var(--ink); }
-
-  /* ---------- table ---------- */
-  .tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); }
-  table.status { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-width: 760px; }
-  table.status th { text-align: left; padding: 0.75rem 1rem; color: var(--mut); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.07em; border-bottom: 1px solid var(--line); background: rgba(17,27,48,0.6); }
-  table.status td { padding: 0.8rem 1rem; border-bottom: 1px solid rgba(148,163,184,0.08); vertical-align: top; }
-  table.status tr:last-child td { border-bottom: none; }
-  table.status tr:hover td { background: rgba(45,212,191,0.03); }
-
-  .pill { display: inline-block; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.24rem 0.7rem; border-radius: 999px; white-space: nowrap; }
-  .pill.sent { background: rgba(52,211,153,0.12); color: var(--green); border: 1px solid rgba(52,211,153,0.35); }
-  .pill.wait { background: rgba(251,191,36,0.10); color: var(--amber); border: 1px solid rgba(251,191,36,0.35); }
-  .pill.fit { background: rgba(45,212,191,0.10); color: var(--teal); border: 1px solid rgba(45,212,191,0.35); }
-  .pill.part { background: rgba(56,189,248,0.10); color: var(--cyan); border: 1px solid rgba(56,189,248,0.35); }
-  .pill.up { background: rgba(167,139,250,0.10); color: var(--purple); border: 1px solid rgba(167,139,250,0.35); }
-
-  /* ---------- pipeline stages ---------- */
-  .pstage { margin-bottom: 1rem; }
-  .pstage-head { display: flex; align-items: baseline; gap: 0.7rem; margin-bottom: 0.6rem; }
-  .pstage-head .n { font-size: 1.6rem; font-weight: 800; color: var(--stage-c, var(--ink)); }
-  .pstage-head h3 { margin: 0; font-size: 1.02rem; }
-  .pstage-head .conv { margin-left: auto; font-size: 0.8rem; color: var(--dim); }
-  .prow { display: grid; grid-template-columns: 190px 110px 1fr auto; gap: 0.9rem; align-items: center; padding: 0.75rem 1rem; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 0.5rem; background: rgba(13,21,38,0.5); font-size: 0.88rem; }
-  .prow .who { font-weight: 700; }
-  .prow .det { color: var(--mut); font-size: 0.84rem; }
-  .empty { border: 1px dashed rgba(148,163,184,0.25); border-radius: 10px; padding: 1rem; color: var(--dim); font-size: 0.86rem; }
-
-  /* ---------- competitor cards ---------- */
-  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; }
-  .ccard { background: linear-gradient(180deg, var(--card2), var(--card)); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.25rem 1.3rem; display: flex; flex-direction: column; gap: 0.55rem; transition: transform 0.15s ease, border-color 0.15s ease; }
-  .ccard:hover { transform: translateY(-2px); border-color: rgba(45,212,191,0.4); }
-  .ccard .top { display: flex; align-items: center; gap: 0.6rem; }
-  .ccard .top h3 { margin: 0; font-size: 1.08rem; }
-  .ccard .top .pill { margin-left: auto; }
-  .ccard .desc { color: var(--mut); font-size: 0.88rem; margin: 0; }
-  .ccard .price { font-size: 0.86rem; color: var(--ink); background: rgba(45,212,191,0.06); border: 1px solid rgba(45,212,191,0.2); border-radius: 8px; padding: 0.5rem 0.7rem; }
-  .ccard .links { display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.15rem; }
-  .ccard .links a { font-size: 0.8rem; color: var(--cyan); word-break: break-all; }
-  .ccard .links .lbl { font-size: 0.72rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.06em; }
-  .ccard .contact { font-size: 0.82rem; color: var(--mut); border-top: 1px dashed rgba(148,163,184,0.15); padding-top: 0.55rem; }
-
-  /* ---------- flow / archify ---------- */
-  .flow { background: #080d18; border: 1px solid var(--line); border-radius: var(--radius); padding: 1rem; overflow-x: auto; }
-  .flow object.flowsvg { width: 100%; display: block; aspect-ratio: 1279 / 900; min-width: 760px; border: 0; }
-  .legend { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.9rem; font-size: 0.78rem; color: var(--mut); }
-  .legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
-  .legend i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
-
-  /* ---------- links ---------- */
-  .lgroup { margin-bottom: 1.1rem; }
-  .lgroup h3 { margin: 0 0 0.45rem; font-size: 1rem; }
-  .lgroup ul { list-style: none; margin: 0; padding: 0; }
-  .lgroup li { padding: 0.5rem 0.8rem; border: 1px solid var(--line); border-radius: 9px; margin-bottom: 0.4rem; background: rgba(13,21,38,0.5); font-size: 0.85rem; display: flex; gap: 0.7rem; align-items: baseline; flex-wrap: wrap; }
-  .lgroup .tag { color: var(--dim); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.06em; min-width: 130px; }
-  .lgroup a { color: var(--cyan); word-break: break-all; }
-
-  footer { max-width: 1200px; margin: 0 auto; padding: 0 1.4rem 2.5rem; color: var(--dim); font-size: 0.78rem; }
-  @media (max-width: 640px) {
-    .prow { grid-template-columns: 1fr; gap: 0.3rem; }
-    .pbar-row { grid-template-columns: 1fr; gap: 0.25rem; }
-    .pbar-row .val { text-align: left; }
-    nav.tabs { top: 57px; }
-  }
-</style>
-</head>
-<body>
-<header class="topbar">
-  <div class="mark">CL</div>
-  <div class="title">
-    <h1>ConfirmLayer Competitor Intel</h1>
-    <p>Outreach pipeline and vendor comparison</p>
-  </div>
-  <div class="spacer"></div>
-  <div class="live"><span class="dot"></span>Live &middot; Researched Sep 30, 2026</div>
-</header>
-
-<nav class="tabs">
-  <div class="wrap">
-    <button class="tab-btn active" data-tab="overview">Overview</button>
-    <button class="tab-btn" data-tab="pipeline">Pipeline</button>
-    <button class="tab-btn" data-tab="competitors">Competitors</button>
-    <button class="tab-btn" data-tab="flow">Workflow</button>
-    <button class="tab-btn" data-tab="links">All links</button>
-  </div>
-</nav>
-
-<main><div class="wrap">
-
-<!-- ==================== OVERVIEW ==================== -->
-<section class="tab-panel active" id="panel-overview">
-  <div class="panel-head">
-    <h2>Overview</h2>
-    <p>Where the competitor outreach stands right now. Every figure is derived from the outreach log below.</p>
-  </div>
-
-  <div class="kpis">
-    <div class="kpi" style="--kpi-c: var(--teal)">
-      <div class="num">8</div>
-      <div class="lbl">Competitors tracked</div>
-      <div class="sub">4 direct wedge, 4 partial fit</div>
-    </div>
-    <div class="kpi" style="--kpi-c: var(--green)">
-      <div class="num">8</div>
-      <div class="lbl">Outreach sent</div>
-      <div class="sub">4 emails, 4 forms</div>
-    </div>
-    <div class="kpi" style="--kpi-c: var(--amber)">
-      <div class="num">8</div>
-      <div class="lbl">Awaiting reply</div>
-      <div class="sub">inbox watch active</div>
-    </div>
-    <div class="kpi" style="--kpi-c: var(--cyan)">
-      <div class="num">0</div>
-      <div class="lbl">Calls confirmed</div>
-      <div class="sub">target: Thu Oct 1 after 11am CT</div>
-    </div>
-    <div class="kpi" style="--kpi-c: var(--purple)">
-      <div class="num">$0.30</div>
-      <div class="lbl">Cheapest comp / check</div>
-      <div class="sub">AgeChecked credit packs</div>
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>Outreach funnel</h3>
-    <p class="hint">Each stage splits its intake into advanced, pending and dropped. Click a stage to see the records behind it.</p>
-    <div class="funnel">
-      <div class="stage" data-goto="pipeline" style="--stage-c: var(--green)">
-        <div class="s-num">Stage 1</div>
-        <div class="s-name">Contacted</div>
-        <div class="s-count">8</div>
-        <div class="dispo"><span class="pen" style="width:100%"></span></div>
-        <div class="s-meta"><b>0</b> advanced &middot; <b>8</b> pending &middot; <b>0</b> dropped</div>
-      </div>
-      <div class="stage" data-goto="pipeline" style="--stage-c: var(--amber)">
-        <div class="s-num">Stage 2</div>
-        <div class="s-name">Replied</div>
-        <div class="s-count">0</div>
-        <div class="dispo"></div>
-        <div class="s-meta"><b>0</b> advanced &middot; <b>0</b> pending &middot; <b>0</b> dropped</div>
-      </div>
-      <div class="stage" data-goto="pipeline" style="--stage-c: var(--cyan)">
-        <div class="s-num">Stage 3</div>
-        <div class="s-name">Call scheduled</div>
-        <div class="s-count">0</div>
-        <div class="dispo"></div>
-        <div class="s-meta"><b>0</b> advanced &middot; <b>0</b> pending &middot; <b>0</b> dropped</div>
-      </div>
-      <div class="stage" data-goto="pipeline" style="--stage-c: var(--purple)">
-        <div class="s-num">Stage 4</div>
-        <div class="s-name">Call completed</div>
-        <div class="s-count">0</div>
-        <div class="dispo"></div>
-        <div class="s-meta"><b>0</b> advanced &middot; <b>0</b> pending &middot; <b>0</b> dropped</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>Pricing landscape</h3>
-    <p class="hint">Published per-verification cost, Shopify-native apps. Reverify before external use.</p>
-    <div class="pbar-row">
-      <div class="who">AgeChecked</div>
-      <div class="pbar-track"><div class="pbar-fill" style="left:50%;width:25%"></div></div>
-      <div class="val">$0.30 - $0.45</div>
-    </div>
-    <div class="pbar-row">
-      <div class="who">BlueCheck</div>
-      <div class="pbar-track"><div class="pbar-fill" style="left:0;width:83%"></div></div>
-      <div class="val">~$0.50</div>
-    </div>
-    <div class="pbar-row">
-      <div class="who">AgeChecker.Net</div>
-      <div class="pbar-track"><div class="pbar-fill" style="left:0;width:83%"></div></div>
-      <div class="val">$0.50</div>
-    </div>
-    <div class="chips">
-      <span class="chip"><b>$25/mo</b> base: BlueCheck, AgeChecker.Net</span>
-      <span class="chip">ID Analyzer <b>from $89/mo</b></span>
-      <span class="chip">Persona Essential <b>from $250/mo</b></span>
-      <span class="chip">Veratad, Veriff: <b>sales-led</b></span>
-      <span class="chip">Verifymy: <b>not public</b></span>
-    </div>
-  </div>
-
-  <div class="tbl-wrap">
-    <table class="status">
-      <thead><tr><th>Competitor</th><th>Channel</th><th>Detail</th><th>Status</th></tr></thead>
-      <tbody>
-        <tr><td><b>AgeChecker.Net</b></td><td>Email</td><td>Sent Sep 30 to contact@agechecker.net. Date correction sent, Prabhat CC'd.</td><td><span class="pill sent">Sent</span></td></tr>
-        <tr><td><b>BlueCheck</b></td><td>Email</td><td>Sent Sep 30 to merchant@bluecheck.me. Date correction sent, Prabhat CC'd.</td><td><span class="pill sent">Sent</span></td></tr>
-        <tr><td><b>AgeChecked</b></td><td>Form</td><td>Monday.com form submitted Sep 30. Confirmation received.</td><td><span class="pill sent">Sent</span></td></tr>
-        <tr><td><b>Veratad</b></td><td>Email</td><td>Sent Sep 30 to Info@veratad.com. Date correction sent, Prabhat CC'd.</td><td><span class="pill sent">Sent</span></td></tr>
-        <tr><td><b>Persona</b></td><td>Email</td><td>Sent Sep 30 to startups@withpersona.com. Date correction sent, Prabhat CC'd.</td><td><span class="pill sent">Sent</span></td></tr>
-        <tr><td><b>Veriff</b></td><td>Form</td><td>Contact-sales form submitted Sep 30. Veriff pushing a self-serve trial instead of a call.</td><td><span class="pill sent">Sent</span></td></tr>
-        <tr><td><b>ID Analyzer</b></td><td>Form</td><td>Contact form submitted Sep 30. Confirmation received.</td><td><span class="pill sent">Sent</span></td></tr>
-        <tr><td><b>Verifymy</b></td><td>Form</td><td>Form at verifymy.io/contact submitted manually Sep 30. Confirmation received.</td><td><span class="pill sent">Sent</span></td></tr>
-      </tbody>
-    </table>
-  </div>
-</section>
-<!-- ==================== PIPELINE ==================== -->
-<section class="tab-panel" id="panel-pipeline">
-  <div class="panel-head">
-    <h2>Pipeline</h2>
-    <p>Every competitor, grouped by funnel stage. Calls wanted Thu Oct 1 after 11am CT with Avinash and Prabhat.</p>
-  </div>
-
-  <div class="card pstage" style="--stage-c: var(--green)">
-    <div class="pstage-head"><span class="n">8</span><h3>Contacted</h3><span class="conv">100% of tracked</span></div>
-    <div class="prow"><span class="who">AgeChecker.Net</span><span class="pill sent">Email sent</span><span class="det">contact@agechecker.net. Correction sent with Prabhat CC'd.</span><span class="pill wait">Awaiting reply</span></div>
-    <div class="prow"><span class="who">BlueCheck</span><span class="pill sent">Email sent</span><span class="det">merchant@bluecheck.me. Correction sent with Prabhat CC'd.</span><span class="pill wait">Awaiting reply</span></div>
-    <div class="prow"><span class="who">AgeChecked</span><span class="pill sent">Form sent</span><span class="det">Monday.com form. Confirmation received.</span><span class="pill wait">Awaiting reply</span></div>
-    <div class="prow"><span class="who">Veratad</span><span class="pill sent">Email sent</span><span class="det">Info@veratad.com. Correction sent with Prabhat CC'd.</span><span class="pill wait">Awaiting reply</span></div>
-    <div class="prow"><span class="who">Persona</span><span class="pill sent">Email sent</span><span class="det">startups@withpersona.com. Correction sent with Prabhat CC'd.</span><span class="pill wait">Awaiting reply</span></div>
-    <div class="prow"><span class="who">Veriff</span><span class="pill sent">Form sent</span><span class="det">Contact-sales form. Pushing self-serve trial, no call yet.</span><span class="pill wait">Awaiting reply</span></div>
-    <div class="prow"><span class="who">ID Analyzer</span><span class="pill sent">Form sent</span><span class="det">Contact form. Confirmation received.</span><span class="pill wait">Awaiting reply</span></div>
-    <div class="prow"><span class="who">Verifymy</span><span class="pill sent">Form sent</span><span class="det">verifymy.io/contact, submitted manually. Confirmation received.</span><span class="pill wait">Awaiting reply</span></div>
-  </div>
-
-  <div class="card pstage" style="--stage-c: var(--amber)">
-    <div class="pstage-head"><span class="n">0</span><h3>Replied</h3><span class="conv">0% conversion so far</span></div>
-    <div class="empty">No replies yet. The morning inbox watch checks for new competitor replies daily.</div>
-  </div>
-
-  <div class="card pstage" style="--stage-c: var(--cyan)">
-    <div class="pstage-head"><span class="n">0</span><h3>Call scheduled</h3><span class="conv">target: Thu Oct 1 after 11am CT</span></div>
-    <div class="empty">Nothing scheduled. Times will be proposed to Avinash for approval once vendors reply.</div>
-  </div>
-
-  <div class="card pstage" style="--stage-c: var(--purple)">
-    <div class="pstage-head"><span class="n">0</span><h3>Call completed</h3><span class="conv">agenda ready</span></div>
-    <div class="empty">Call agenda covers: product and customer-verification flow, Shopify integration, order hold and release, ID and selfie flow, repeat-customer handling, pass/fail handling, pricing and contract terms, data retention and deletion, data residency, reseller and white-label support.</div>
-  </div>
-</section>
-
-<!-- ==================== COMPETITORS ==================== -->
-<section class="tab-panel" id="panel-competitors">
-  <div class="panel-head">
-    <h2>Competitors</h2>
-    <p>Eight vendors researched Sep 30, 2026. Four are direct wedge competitors for post-checkout e-commerce age gating.</p>
-  </div>
-  <div class="cards">
-
-    <div class="ccard">
-      <div class="top"><h3>AgeChecker.Net</h3><span class="pill fit">Direct wedge</span></div>
-      <p class="desc">Age verification for e-commerce and Shopify stores. Verifies customers before or after checkout, supports location and product rules, integrates with Checkout, customer accounts and Shopify Flow.</p>
-      <div class="price">$25/month plus $0.50 per accepted verification, plus enabled add-ons (Shopify App Store listing).</div>
-      <div class="links"><span class="lbl">Links</span>
-        <a href="https://agechecker.net/">Website: https://agechecker.net/</a>
-        <a href="https://apps.shopify.com/agechecker-net?surface_intra_position=1&surface_type=partners&surface_version=redesign">Shopify app listing</a>
-        <a href="https://agechecker.net/demo">Demo page: https://agechecker.net/demo</a>
-      </div>
-      <div class="contact">Contact: contact@agechecker.net &middot; Demo page phone 1-888-276-2303</div>
-    </div>
-
-    <div class="ccard">
-      <div class="top"><h3>BlueCheck</h3><span class="pill fit">Direct wedge</span></div>
-      <p class="desc">Age verification between payment and fulfillment using order details already on hand (name and address, 96%+ match rate claimed). Fallbacks: last four of SSN, mobile-phone check, photo ID. Product and state rules, order tags, BigCommerce and REST API.</p>
-      <div class="price">Small $25/month, Medium $100/month, Large $250/month, plus about $0.50 per completed verification (Shopify listing and app review sources).</div>
-      <div class="links"><span class="lbl">Links</span>
-        <a href="https://www.bluecheck.me">Website: https://www.bluecheck.me</a>
-        <a href="https://www.bluecheck.me/ecommerce-age-verification">E-commerce page</a>
-        <a href="https://apps.shopify.com/bluecheck-age-verification?locale=nb&surface_detail=orders-and-shipping-orders-order-editing&surface_inter_position=1&surface_intra_position=8&surface_type=category&surface_version=redesign">Shopify app listing</a>
-        <a href="https://wordpress.org/plugins/bluecheck-age-verification/">WordPress plugin page</a>
-      </div>
-      <div class="contact">Contact: merchant@bluecheck.me (published on the WordPress plugin page)</div>
-    </div>
-
-    <div class="ccard">
-      <div class="top"><h3>AgeChecked</h3><span class="pill fit">Direct wedge</span></div>
-      <p class="desc">UK-based age verification for e-commerce. Shopify app and WooCommerce plugin for alcohol, knives and vaping. Post-checkout flow like ConfirmLayer's wedge: verify once per customer, merchant sees pass/fail and ships or follows up.</p>
-      <div class="price">Basic: free, then credit packs. Plus: $99.99/month. Credits: 100 for $45 ($0.45/check), 250 for $100 ($0.40/check), 500 for $170 ($0.34/check), 1,000 for $300 ($0.30/check).</div>
-      <div class="links"><span class="lbl">Links</span>
-        <a href="https://www.agechecked.com">Website: https://www.agechecked.com</a>
-        <a href="https://www.agechecked.com/shopify-age-verification/">Shopify product page</a>
-        <a href="https://www.agechecked.com/agechecked-for-ecommerce/">E-commerce page</a>
-        <a href="https://www.agechecked.com/woocommerce-plugin/">WooCommerce plugin page</a>
-      </div>
-      <div class="contact">Contact: no published sales email found. Outreach via Monday.com form.</div>
-    </div>
-
-    <div class="ccard">
-      <div class="top"><h3>Verifymy (VerifyMyAge)</h3><span class="pill fit">Direct wedge</span></div>
-      <p class="desc">Netherlands-based age verification for e-commerce. Dedicated Shopify app (zero friction, no impact on checkout), WooCommerce app, eBay-compatible app and direct API. Referenced by the Ofcom and UK age-check ecosystem.</p>
-      <div class="price">Not public. Pricing page says price varies by application, platform, integration method and monthly volume.</div>
-      <div class="links"><span class="lbl">Links</span>
-        <a href="https://verifymyage.nl">Website: https://verifymyage.nl</a>
-        <a href="https://verifymyage.nl/pricing">Pricing page: https://verifymyage.nl/pricing</a>
-      </div>
-      <div class="contact">Contact: no published sales email found. Outreach via verifymy.io/contact form.</div>
-    </div>
-
-    <div class="ccard">
-      <div class="top"><h3>Veratad</h3><span class="pill part">Partial fit</span></div>
-      <p class="desc">Identity and age verification via a single JSON REST API (IDresponse platform). ID documents, identity data for 5B+ citizens, knowledge-based authentication, biometrics, 2FA, reusable identity. Lists "Age-Restricted Commerce" as an industry.</p>
-      <div class="price">None published. Sales-led pricing.</div>
-      <div class="links"><span class="lbl">Links</span>
-        <a href="https://veratad.com/">Website: https://veratad.com/</a>
-        <a href="https://veratad.com/solutions">Age verification page: https://veratad.com/solutions</a>
-      </div>
-      <div class="contact">Contact: Info@veratad.com (site footer) &middot; (201) 510-6000 &middot; (888) 510-7343</div>
-    </div>
-
-    <div class="ccard">
-      <div class="top"><h3>Persona</h3><span class="pill part">Partial fit</span></div>
-      <p class="desc">Modular identity verification platform: government-ID and selfie flows, database verifications, fraud prevention, workflow orchestration, KYC/KYB templates. Covers 200+ countries. Age assurance is a supported verification type.</p>
-      <div class="price">Free Starter: 500 government ID verifications/month. Essential: starting at $250/month (12-month minimum). Startup Program: up to 12 months of free core-tool access.</div>
-      <div class="links"><span class="lbl">Links</span>
-        <a href="https://withpersona.com/">Website: https://withpersona.com/</a>
-        <a href="https://withpersona.com/pricing">Pricing page: https://withpersona.com/pricing</a>
-      </div>
-      <div class="contact">Contact: startups@withpersona.com (official startup-program page)</div>
-    </div>
-
-    <div class="ccard">
-      <div class="top"><h3>Veriff</h3><span class="pill part">Partial fit</span></div>
-      <p class="desc">ID and biometric verification with web/mobile SDK, APIs and webhooks. Government-ID plus selfie/liveness flows. KYC use-case page explicitly covers streamlining age-restricted purchases.</p>
-      <div class="price">None published. Sales-led pricing.</div>
-      <div class="links"><span class="lbl">Links</span>
-        <a href="https://www.veriff.com/">Website: https://www.veriff.com/</a>
-        <a href="https://www.veriff.com/use-cases/kyc">KYC use cases: https://www.veriff.com/use-cases/kyc</a>
-      </div>
-      <div class="contact">Contact: no published sales email found. Outreach via contact-sales form.</div>
-    </div>
-
-    <div class="ccard">
-      <div class="top"><h3>ID Analyzer</h3><span class="pill part">Partial fit</span></div>
-      <p class="desc">Document and biometric identity verification API. OCR, biometric match, liveness, fraud signals, AML/PEP screening across 3,000+ document types from 190+ countries. DocuPass hosted verification links suit e-commerce age checks.</p>
-      <div class="price">Plans from $89/month. Free plan: $0/month with 100 free test credits. One credit per standard ID verification. 25% off annual billing.</div>
-      <div class="links"><span class="lbl">Links</span>
-        <a href="https://www.idanalyzer.com">Website: https://www.idanalyzer.com</a>
-        <a href="https://www.idanalyzer.com/en/pricing">Pricing page: https://www.idanalyzer.com/en/pricing</a>
-      </div>
-      <div class="contact">Contact: no published sales email found. Outreach via contact form.</div>
-    </div>
-
-  </div>
-</section>
-<!-- ==================== FLOW ==================== -->
-<section class="tab-panel" id="panel-flow">
-  <div class="panel-head">
-    <h2>Workflow</h2>
-    <p>The competitor intel operation end to end, generated with <a href="https://github.com/tt-a1i/archify">Archify</a>.</p>
-  </div>
-  <div class="flow">
-<object data="flow.svg" type="image/svg+xml" class="flowsvg" aria-label="ConfirmLayer competitor intel workflow diagram">Workflow diagram (flow.svg)</object>
-  </div>
-  <div class="legend">
-    <span><i style="background:rgba(45,212,191,0.25);border:1px solid #2dd4bf"></i>Backend / system</span>
-    <span><i style="background:rgba(56,189,248,0.25);border:1px solid #38bdf8"></i>Frontend / touchpoint</span>
-    <span><i style="background:rgba(251,191,36,0.25);border:1px solid #fbbf24"></i>External vendor</span>
-    <span><i style="background:rgba(52,211,153,0.25);border:1px solid #34d399"></i>Data store</span>
-    <span><i style="background:rgba(167,139,250,0.25);border:1px solid #a78bfa"></i>Trust / verification</span>
-  </div>
-</section>
-
-<!-- ==================== LINKS ==================== -->
-<section class="tab-panel" id="panel-links">
-  <div class="panel-head">
-    <h2>All links</h2>
-    <p>Every researched URL, verbatim. Twenty-one links across eight competitors.</p>
-  </div>
-
-  <div class="card lgroup"><h3>AgeChecker.Net</h3><ul>
-    <li><span class="tag">Website</span><a href="https://agechecker.net/">https://agechecker.net/</a></li>
-    <li><span class="tag">Shopify app</span><a href="https://apps.shopify.com/agechecker-net?surface_intra_position=1&surface_type=partners&surface_version=redesign">https://apps.shopify.com/agechecker-net?surface_intra_position=1&amp;surface_type=partners&amp;surface_version=redesign</a></li>
-    <li><span class="tag">Demo</span><a href="https://agechecker.net/demo">https://agechecker.net/demo</a></li>
-  </ul></div>
-
-  <div class="card lgroup"><h3>BlueCheck</h3><ul>
-    <li><span class="tag">Website</span><a href="https://www.bluecheck.me">https://www.bluecheck.me</a></li>
-    <li><span class="tag">E-commerce page</span><a href="https://www.bluecheck.me/ecommerce-age-verification">https://www.bluecheck.me/ecommerce-age-verification</a></li>
-    <li><span class="tag">Shopify app</span><a href="https://apps.shopify.com/bluecheck-age-verification?locale=nb&surface_detail=orders-and-shipping-orders-order-editing&surface_inter_position=1&surface_intra_position=8&surface_type=category&surface_version=redesign">https://apps.shopify.com/bluecheck-age-verification?locale=nb&amp;surface_detail=orders-and-shipping-orders-order-editing&amp;surface_inter_position=1&amp;surface_intra_position=8&amp;surface_type=category&amp;surface_version=redesign</a></li>
-    <li><span class="tag">WordPress plugin</span><a href="https://wordpress.org/plugins/bluecheck-age-verification/">https://wordpress.org/plugins/bluecheck-age-verification/</a></li>
-  </ul></div>
-
-  <div class="card lgroup"><h3>AgeChecked</h3><ul>
-    <li><span class="tag">Website</span><a href="https://www.agechecked.com">https://www.agechecked.com</a></li>
-    <li><span class="tag">Shopify page</span><a href="https://www.agechecked.com/shopify-age-verification/">https://www.agechecked.com/shopify-age-verification/</a></li>
-    <li><span class="tag">E-commerce page</span><a href="https://www.agechecked.com/agechecked-for-ecommerce/">https://www.agechecked.com/agechecked-for-ecommerce/</a></li>
-    <li><span class="tag">WooCommerce page</span><a href="https://www.agechecked.com/woocommerce-plugin/">https://www.agechecked.com/woocommerce-plugin/</a></li>
-  </ul></div>
-
-  <div class="card lgroup"><h3>Veratad</h3><ul>
-    <li><span class="tag">Website</span><a href="https://veratad.com/">https://veratad.com/</a></li>
-    <li><span class="tag">Solutions</span><a href="https://veratad.com/solutions">https://veratad.com/solutions</a></li>
-  </ul></div>
-
-  <div class="card lgroup"><h3>Persona</h3><ul>
-    <li><span class="tag">Website</span><a href="https://withpersona.com/">https://withpersona.com/</a></li>
-    <li><span class="tag">Pricing</span><a href="https://withpersona.com/pricing">https://withpersona.com/pricing</a></li>
-  </ul></div>
-
-  <div class="card lgroup"><h3>Veriff</h3><ul>
-    <li><span class="tag">Website</span><a href="https://www.veriff.com/">https://www.veriff.com/</a></li>
-    <li><span class="tag">KYC use cases</span><a href="https://www.veriff.com/use-cases/kyc">https://www.veriff.com/use-cases/kyc</a></li>
-  </ul></div>
-
-  <div class="card lgroup"><h3>ID Analyzer</h3><ul>
-    <li><span class="tag">Website</span><a href="https://www.idanalyzer.com">https://www.idanalyzer.com</a></li>
-    <li><span class="tag">Pricing</span><a href="https://www.idanalyzer.com/en/pricing">https://www.idanalyzer.com/en/pricing</a></li>
-  </ul></div>
-
-  <div class="card lgroup"><h3>Verifymy (VerifyMyAge)</h3><ul>
-    <li><span class="tag">Website</span><a href="https://verifymyage.nl">https://verifymyage.nl</a></li>
-    <li><span class="tag">Pricing</span><a href="https://verifymyage.nl/pricing">https://verifymyage.nl/pricing</a></li>
-  </ul></div>
-</section>
-
-</div></main>
-
-<footer>
-  ConfirmLayer competitor intel &middot; researched Sep 30, 2026 &middot; outreach log updated as replies arrive &middot; prices reverify before external use
-</footer>
-
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ConfirmLayer Competitor Intel</title><style>
+:root{
+  --bg:#ffffff; --soft:#f8fafc; --card:#ffffff; --border:#e6e8ee;
+  --ink:#0f172a; --muted:#64748b; --faint:#94a3b8;
+  --teal:#0d9488; --teal-d:#0f766e; --teal-soft:#ccfbf1;
+  --amber:#d97706; --amber-soft:#fef3c7;
+  --rose:#e11d48; --rose-soft:#ffe4e6;
+  --blue:#2563eb; --blue-soft:#dbeafe;
+  --violet:#7c3aed; --violet-soft:#ede9fe;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.5}
+a{color:var(--teal-d)}
+header.top{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.hrow{display:flex;align-items:center;gap:14px;padding:14px 0}
+.logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#14b8a6,#2563eb);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:15px;letter-spacing:.5px}
+.htitle h1{font-size:17px;margin:0;letter-spacing:-.01em}
+.htitle p{margin:0;color:var(--muted);font-size:12.5px}
+.live{margin-left:auto;display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:6px 12px;background:var(--soft)}
+.dot{width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 0 3px #d1fae5}
+nav.tabs{border-bottom:1px solid var(--border);background:#fff}
+.tabs-in{display:flex;gap:4px}
+.tab{border:0;background:none;padding:13px 16px;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab:hover{color:var(--ink)}
+.tab.active{color:var(--teal-d);border-bottom-color:var(--teal)}
+main{padding:28px 0 60px}
+.panel{display:none}
+.panel.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+h2.sec{font-size:20px;margin:0 0 4px;letter-spacing:-.02em}
+p.sub{color:var(--muted);margin:0 0 18px;font-size:13.5px}
+.grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:22px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:0 1px 2px rgba(16,24,40,.05)}
+.kpi .n{font-size:27px;font-weight:750;letter-spacing:-.02em}
+.kpi .l{font-size:12.5px;font-weight:650;margin-top:2px}
+.kpi .s{font-size:12px;color:var(--muted);margin-top:4px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:0 1px 2px rgba(16,24,40,.05);margin-bottom:18px}
+.card h3{margin:0 0 4px;font-size:15.5px;letter-spacing:-.01em}
+.how{font-size:12.5px;color:var(--muted);background:var(--soft);border:1px dashed var(--border);border-radius:10px;padding:10px 12px;margin:12px 0 0}
+.how b{color:var(--ink)}
+.funnel{margin-top:6px}
+.fhead,.fstage{display:grid;grid-template-columns:1fr 220px 1fr;gap:10px;align-items:center}
+.fhead{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);padding:6px 0}
+.fhead .c{text-align:center}
+.fstage{padding:9px 10px;border-radius:10px;cursor:pointer;border:1px solid transparent}
+.fstage:hover{background:var(--soft)}
+.fstage.sel{background:var(--soft);border-color:var(--border)}
+.fbar{height:26px;border-radius:7px;display:flex;align-items:center;font-size:12.5px;font-weight:700;min-width:34px;padding:0 10px;color:#fff;transition:width .4s ease}
+.fbar.adv{background:linear-gradient(90deg,#14b8a6,#0d9488);justify-content:center}
+.fbar.pend{background:linear-gradient(90deg,#f59e0b,#d97706)}
+.fbar.drop{background:linear-gradient(90deg,#fb7185,#e11d48);justify-content:flex-end}
+.fbar.zero{background:#f1f5f9;color:var(--faint);justify-content:center;font-weight:600}
+.fleft{display:flex;justify-content:flex-end}
+.fmid{text-align:center}
+.fname{font-size:13.5px;font-weight:700;margin-top:5px}
+.fconv{font-size:12px;color:var(--muted)}
+#fdetail{margin-top:14px;border-top:1px solid var(--border);padding-top:14px}
+.pill{display:inline-block;font-size:11.5px;font-weight:700;border-radius:999px;padding:3px 10px}
+.p-pend{background:var(--amber-soft);color:#92400e}
+.p-adv{background:var(--teal-soft);color:#115e59}
+.p-none{background:#f1f5f9;color:var(--muted)}
+.p-drop{background:var(--rose-soft);color:#9f1239}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+table.t th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);padding:10px 12px;border-bottom:1px solid var(--border)}
+table.t td{padding:11px 12px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+table.t tr:last-child td{border-bottom:0}
+.bars{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.brow{display:grid;grid-template-columns:150px 1fr 150px;gap:12px;align-items:center;font-size:13px}
+.btrack{background:#f1f5f9;border-radius:6px;height:22px;overflow:hidden}
+.bfill{height:100%;border-radius:6px;background:linear-gradient(90deg,#14b8a6,#2563eb);display:flex;align-items:center;justify-content:flex-end;padding-right:8px;color:#fff;font-size:11.5px;font-weight:700;min-width:44px}
+.bval{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+.cards2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.vcard{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:0 1px 2px rgba(16,24,40,.05)}
+.vcard .vh{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.vinit{width:34px;height:34px;border-radius:9px;background:var(--soft);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--teal-d);font-size:14px}
+.vcard h3{margin:0;font-size:15.5px}
+.tag{font-size:11px;font-weight:700;color:var(--muted);background:var(--soft);border:1px solid var(--border);border-radius:6px;padding:2px 8px;margin-left:auto;white-space:nowrap}
+.vcard p.d{font-size:13px;color:var(--muted);margin:0 0 10px}
+.prow{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:6px 0;border-top:1px solid #f1f5f9}
+.prow span:first-child{color:var(--muted)}
+.prow span:last-child{font-weight:650;text-align:right}
+.vlinks{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.vlinks a{font-size:12.5px;font-weight:650;text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:6px 11px;color:var(--teal-d);background:#fff}
+.vlinks a:hover{border-color:var(--teal);background:#f0fdfa}
+.flowbox{background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px;overflow-x:auto}
+.flowbox svg{width:100%;height:auto;display:block;min-width:720px}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:14px;font-size:12.5px;color:var(--muted)}
+.sw{width:12px;height:12px;border-radius:4px;display:inline-block;margin-right:6px;vertical-align:-1px}
+.lnk{border-bottom:1px solid #f1f5f9;padding:10px 4px}
+.lnk:last-child{border-bottom:0}
+.lnk a{font-weight:600;font-size:13.5px;text-decoration:none;word-break:break-all}
+.lnk a:hover{text-decoration:underline}
+.lnk .lt{font-size:11px;font-weight:700;color:var(--muted);background:var(--soft);border:1px solid var(--border);border-radius:6px;padding:2px 8px;margin-left:8px;white-space:nowrap}
+.lnk p{margin:3px 0 0;font-size:12.5px;color:var(--muted)}
+footer{border-top:1px solid var(--border);padding:20px 0;color:var(--faint);font-size:12.5px}
+@media(max-width:900px){.grid5{grid-template-columns:repeat(2,1fr)}.cards2{grid-template-columns:1fr}.fhead,.fstage{grid-template-columns:1fr 150px 1fr}.brow{grid-template-columns:110px 1fr 110px}}
+</style></head><body><header class="top"><div class="wrap hrow"><div class="logo">CL</div><div class="htitle"><h1>ConfirmLayer Competitor Intel</h1><p>Outreach pipeline and vendor comparison</p></div><div class="live"><span class="dot"></span>Live &middot; Researched Sep 30, 2026</div></div></header><nav class="tabs"><div class="wrap tabs-in"><button class="tab active" data-tab="overview">Overview</button><button class="tab" data-tab="pipeline">Pipeline</button><button class="tab" data-tab="competitors">Competitors</button><button class="tab" data-tab="flow">Workflow</button><button class="tab" data-tab="links">All links</button></div></nav><main><div class="wrap"><section class="panel active" id="panel-overview"><h2 class="sec">Outreach funnel</h2><p class="sub">8 vendors in pipeline &middot; calls wanted Thu Oct 1 after 11:00 AM CT (Avinash + Prabhat)</p><div class="grid5"><div class="kpi"><div class="n">8</div><div class="l">Competitors tracked</div><div class="s">Mapped Sep 30, 2026</div></div><div class="kpi"><div class="n">8</div><div class="l">Outreach sent</div><div class="s">4 email &middot; 4 web forms</div></div><div class="kpi"><div class="n">8</div><div class="l">Awaiting reply</div><div class="s">0 confirmed &middot; 0 declined</div></div><div class="kpi"><div class="n">0</div><div class="l">Calls confirmed</div><div class="s">Window: Thu Oct 1 after 11am CT</div></div><div class="kpi"><div class="n">$0.30</div><div class="l">Cheapest observed check</div><div class="s">ID Analyzer, direct comparator</div></div></div><div class="card"><h3>Pipeline by stage</h3><p class="sub" style="margin-bottom:6px">Click a stage to inspect the records behind it. Teal advanced, amber pending, rose dropped.</p><div class="funnel"><div class="fhead"><div style="text-align:right">Dropped</div><div class="c">Advanced</div><div>Pending</div></div><div class="fstage sel" data-s="identified"><div class="fleft"><div class="fbar drop zero" style="width:8%">0</div></div><div class="fmid"><div class="fbar adv" style="width:100%">8</div><div class="fname">Identified</div><div class="fconv">100% advanced</div></div><div class="fright"><div class="fbar pend zero" style="width:8%">0</div></div></div><div class="fstage" data-s="contacted"><div class="fleft"><div class="fbar drop zero" style="width:8%">0</div></div><div class="fmid"><div class="fbar adv zero" style="width:8%">0</div><div class="fname">Contacted</div><div class="fconv">0% advanced &middot; 8 pending</div></div><div class="fright"><div class="fbar pend" style="width:100%">8</div></div></div><div class="fstage" data-s="replied"><div class="fleft"><div class="fbar drop zero" style="width:8%">0</div></div><div class="fmid"><div class="fbar adv zero" style="width:8%">0</div><div class="fname">Reply received</div><div class="fconv">No records yet</div></div><div class="fright"><div class="fbar pend zero" style="width:8%">0</div></div></div><div class="fstage" data-s="booked"><div class="fleft"><div class="fbar drop zero" style="width:8%">0</div></div><div class="fmid"><div class="fbar adv zero" style="width:8%">0</div><div class="fname">Call booked</div><div class="fconv">No records yet</div></div><div class="fright"><div class="fbar pend zero" style="width:8%">0</div></div></div></div><div id="fdetail"></div><div class="how"><b>How this is computed:</b> intake = vendors mapped in research. Advanced = moved to the next stage. Pending = contacted and awaiting a reply as of Sep 30, 2026. Dropped = declined or no-fit. The three always sum to intake, so a stalled stage reads as pending, never lost.</div></div><div class="card"><h3>Observed per-check pricing</h3><p class="sub" style="margin-bottom:6px">Lowest public or quoted unit price found per vendor. Reverify before external use.</p><div class="bars"><div class="brow"><span>AgeChecked</span><div class="btrack"><div class="bfill" style="width:18%">$0.10</div></div><div class="bval">$0.10 - $0.20</div></div><div class="brow"><span>ID Analyzer</span><div class="btrack"><div class="bfill" style="width:30%">$0.30</div></div><div class="bval">$0.30 / check</div></div><div class="brow"><span>Veriff</span><div class="btrack"><div class="bfill" style="width:40%">$0.40</div></div><div class="bval">from $0.40</div></div><div class="brow"><span>Verifymy</span><div class="btrack"><div class="bfill" style="width:42%">$0.42</div></div><div class="bval">about $0.42</div></div><div class="brow"><span>Persona</span><div class="btrack"><div class="bfill" style="width:65%">inquiry</div></div><div class="bval">sales-led</div></div><div class="brow"><span>BlueCheck</span><div class="btrack"><div class="bfill" style="width:65%">inquiry</div></div><div class="bval">quote-based</div></div><div class="brow"><span>Veratad</span><div class="btrack"><div class="bfill" style="width:65%">inquiry</div></div><div class="bval">quote-based</div></div><div class="brow"><span>AgeChecker.Net</span><div class="btrack"><div class="bfill" style="width:65%">inquiry</div></div><div class="bval">plan-based</div></div></div><div class="how"><b>How this is computed:</b> bars scale to a $1.00 reference. Inquiry-led vendors show no public unit price.</div></div><div class="card"><h3>Outreach status</h3><table class="t"><thead><tr><th>Competitor</th><th>Channel</th><th>Sent</th><th>Status</th></tr></thead><tbody id="tb-status"></tbody></table><div class="how"><b>How this is computed:</b> outreach went out Sep 30, 2026. Replies move rows to Reply received; confirmed times move to Call booked after Avinash approves.</div></div></section><section class="panel" id="panel-pipeline"><h2 class="sec">Competitor pipeline</h2><p class="sub">Every vendor by outreach stage. Morning inbox watch runs through Oct 1; proposed times go to Avinash before any invite is created.</p><div class="card" style="padding:6px 20px"><table class="t"><thead><tr><th>Competitor</th><th>Channel</th><th>Ask</th><th>Stage</th><th>Next step</th></tr></thead><tbody id="tb-pipe"></tbody></table></div><div class="how"><b>Meeting rule:</b> no invite is created from a proposed time alone. Avinash approves the exact time first, then Avinash and Prabhat are both invited.</div></section><section class="panel" id="panel-competitors"><h2 class="sec">Competitors</h2><p class="sub">8 vendors mapped Sep 30, 2026. Pricing is observed public or quoted data, reverify before external use.</p><div class="cards2"><div class="vcard"><div class="vh"><div class="vinit">AC</div><h3>AgeChecker.Net</h3><span class="tag">Age verification</span></div><p class="d">US age-verification vendor for e-commerce checkout.</p><div class="prow"><span>Pricing</span><span>Plan-based, inquiry</span></div><div class="prow"><span>Contact</span><span>contact@agechecker.net</span></div><div class="vlinks"><a href="https://agechecker.net/">Website</a><a href="https://agechecker.net/pricing/">Pricing</a></div></div><div class="vcard"><div class="vh"><div class="vinit">BC</div><h3>BlueCheck</h3><span class="tag">Age verification</span></div><p class="d">Age and ID verification for regulated e-commerce.</p><div class="prow"><span>Pricing</span><span>Quote-based</span></div><div class="prow"><span>Contact</span><span>merchant@bluecheck.me</span></div><div class="vlinks"><a href="https://www.bluecheck.me/">Website</a><a href="https://www.bluecheck.me/pricing">Pricing</a></div></div><div class="vcard"><div class="vh"><div class="vinit">VT</div><h3>Veratad</h3><span class="tag">Identity verification</span></div><p class="d">Identity and age-verification APIs for online businesses.</p><div class="prow"><span>Pricing</span><span>Quote-based</span></div><div class="prow"><span>Contact</span><span>Info@veratad.com</span></div><div class="vlinks"><a href="https://www.veratad.com/">Website</a><a href="https://www.veratad.com/solutions/age-verification">Age verification</a></div></div><div class="vcard"><div class="vh"><div class="vinit">PE</div><h3>Persona</h3><span class="tag">Identity platform</span></div><p class="d">Full identity-verification platform with startup program and flexible pricing.</p><div class="prow"><span>Pricing</span><span>Sales-led, startup plans</span></div><div class="prow"><span>Contact</span><span>startups@withpersona.com</span></div><div class="vlinks"><a href="https://withpersona.com/">Website</a><a href="https://withpersona.com/pricing">Pricing</a><a href="https://withpersona.com/startups">Startups</a></div></div><div class="vcard"><div class="vh"><div class="vinit">AG</div><h3>AgeChecked</h3><span class="tag">Age verification</span></div><p class="d">UK age-verification provider with per-check pricing for online retailers.</p><div class="prow"><span>Pricing</span><span>$0.10 - $0.20 / check</span></div><div class="prow"><span>Contact</span><span>Web form</span></div><div class="vlinks"><a href="https://www.agechecked.com/">Website</a><a href="https://www.agechecked.com/pricing/">Pricing</a></div></div><div class="vcard"><div class="vh"><div class="vinit">ID</div><h3>ID Analyzer</h3><span class="tag">IDV API</span></div><p class="d">Developer-first ID verification API; the direct economic comparator.</p><div class="prow"><span>Pricing</span><span>$0.30 / check</span></div><div class="prow"><span>Contact</span><span>Web form</span></div><div class="vlinks"><a href="https://www.idanalyzer.com/">Website</a><a href="https://www.idanalyzer.com/pricing">Pricing</a><a href="https://www.idanalyzer.com/products/id-verification">ID verification</a></div></div><div class="vcard"><div class="vh"><div class="vinit">VF</div><h3>Veriff</h3><span class="tag">IDV platform</span></div><p class="d">Global identity-verification platform, usage-based pricing.</p><div class="prow"><span>Pricing</span><span>From $0.40 / verification</span></div><div class="prow"><span>Contact</span><span>Web form</span></div><div class="vlinks"><a href="https://www.veriff.com/">Website</a><a href="https://www.veriff.com/pricing">Pricing</a></div></div><div class="vcard"><div class="vh"><div class="vinit">VM</div><h3>Verifymy</h3><span class="tag">Age verification</span></div><p class="d">Age-verification service with per-check pricing for digital merchants.</p><div class="prow"><span>Pricing</span><span>About $0.42 / check</span></div><div class="prow"><span>Contact</span><span>Web form</span></div><div class="vlinks"><a href="https://verifymyage.nl/">Website</a><a href="https://verifymyage.nl/pricing/">Pricing</a></div></div></div></section><section class="panel" id="panel-flow"><h2 class="sec">Workflow</h2><p class="sub">The competitor intel operation end to end, generated with <a href="https://github.com/tt-a1i/archify">Archify</a>.</p><div class="card"><div class="flowbox"><svg viewBox="0 0 1279 900" role="img" lang="en" aria-labelledby="archify-diagram-title archify-diagram-description"><title id="archify-diagram-title">ConfirmLayer competitor intel workflow</title><desc id="archify-diagram-description">Competitor intel operation: research, outreach, demos, debrief, decision.</desc><style>.a{fill:#f8fafc;stroke:#e2e8f0}.b{stroke:#eef2f7}.c{fill:#f0fdfa;stroke:#0d9488}.d{fill:#eff6ff;stroke:#2563eb}.e{fill:#fffbeb;stroke:#d97706}.f{fill:#ecfdf5;stroke:#059669}.g{fill:#f5f3ff;stroke:#7c3aed}.h{fill:#f1f5f9;stroke:#cbd5e1}.w .ac{fill:#0d9488}.x .ac{fill:#2563eb}.y .ac{fill:#d97706}.z .ac{fill:#059669}.aa .ac{fill:#7c3aed}.ab{opacity:.85}text{fill:#0f172a;font-family:Inter,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}.i{fill:#94a3b8}.j{fill:#64748b}.k{fill:#0f172a;font-weight:600}.l{fill:#0f766e}.m{fill:#1d4ed8}.n{fill:#64748b}.o{fill:#0f766e;font-weight:700}.p,.q{stroke:#94a3b8;fill:none}.r{stroke:#0d9488;fill:none}.q{stroke-dasharray:6 4}.ms,.mt{fill:#94a3b8}.mu{fill:#0d9488}.mv{fill:#7c3aed}</style><defs><marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" class="ms" /></marker><marker id="arrowhead-emphasis" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" class="mu" /></marker><marker id="arrowhead-security" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" class="mv" /></marker><marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" class="mt" /></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" class="b" stroke-width="0.5"/></pattern></defs><rect width="100%" height="100%" fill="url(#grid)" /><rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-0" x="40" y="52" width="1148" height="104" rx="10" class="a" stroke-width="1"/><text x="54" y="74" class="i" font-size="10" font-weight="600">01 / Research</text><rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-1" x="40" y="176" width="1148" height="104" rx="10" class="a" stroke-width="1"/><text x="54" y="198" class="i" font-size="10" font-weight="600">02 / Tracker</text><rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-2" x="40" y="300" width="1148" height="104" rx="10" class="a" stroke-width="1"/><text x="54" y="322" class="i" font-size="10" font-weight="600">03 / Outreach</text><rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-3" x="40" y="424" width="1148" height="104" rx="10" class="a" stroke-width="1"/><text x="54" y="446" class="i" font-size="10" font-weight="600">04 / Demos and calls</text><rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-4" x="40" y="548" width="1148" height="104" rx="10" class="a" stroke-width="1"/><text x="54" y="570" class="i" font-size="10" font-weight="600">05 / Debrief</text><rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-5" x="40" y="672" width="1148" height="104" rx="10" class="a" stroke-width="1"/><text x="54" y="694" class="i" font-size="10" font-weight="600">06 / Decision</text><line x1="77" y1="35" x2="236" y2="35" class="p" stroke-width="1.1"/><rect x="77" y="27" width="159" height="16" rx="4" class="h"/><text x="156" y="39" class="j" font-size="8" font-weight="600" text-anchor="middle">Phase 1: Competitor mapping</text><line x1="264" y1="35" x2="572" y2="35" class="r" stroke-width="1.1"/><rect x="264" y="27" width="308" height="16" rx="4" class="h"/><text x="418" y="39" class="l" font-size="8" font-weight="600" text-anchor="middle">Phase 2: Outreach and booking</text><line x1="600" y1="35" x2="826" y2="35" class="r" stroke-width="1.1"/><rect x="600" y="27" width="226" height="16" rx="4" class="h"/><text x="713" y="39" class="l" font-size="8" font-weight="600" text-anchor="middle">Phase 3: Demos Thu Oct 1 after 11am CT</text><line x1="854" y1="35" x2="1030" y2="35" class="p" stroke-width="1.1"/><rect x="854" y="27" width="176" height="16" rx="4" class="h"/><text x="942" y="39" class="j" font-size="8" font-weight="600" text-anchor="middle">Phase 4: Debrief and synthesis</text><line x1="1058" y1="35" x2="1262" y2="35" class="q" stroke-width="1.1"/><rect x="1058" y="27" width="204" height="16" rx="4" class="h"/><text x="1160" y="39" class="m" font-size="8" font-weight="600" text-anchor="middle">Phase 5: Tracker built and decisions</text><path data-edge-from="r1" data-edge-to="t1" data-edge-label="mapped" data-edge-key="0" data-edge-id="e1" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="198,119;1200,119;1200,243;198,243" d="M 198 119 L 1200 119 L 1200 243 L 198 243" class="p"="edge" style="--step:0" stroke-width="1.4" marker-end="url(#arrowhead)"/><path data-edge-from="t1" data-edge-to="o1" data-edge-label="demo pages, emails" data-edge-key="1" data-edge-id="e2" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="123,269;123,290;310,290;310,341" d="M 123 269 L 123 290 L 310 290 L 310 341" class="r"="edge" style="--step:1" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/><path data-edge-from="o1" data-edge-to="o3" data-edge-label="then forms" data-edge-key="2" data-edge-id="e3" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="385,367;451,367" d="M 385 367 L 451 367" class="p"="edge" style="--step:2" stroke-width="1.4" marker-end="url(#arrowhead)"/><path data-edge-from="o3" data-edge-to="c1" data-edge-key="3" data-edge-id="e4" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="526,393;526,491;571,491" d="M 526 393 L 526 491 L 571 491" class="p"="edge" style="--step:3" stroke-width="1.4" marker-end="url(#arrowhead)"/><path data-edge-from="c1" data-edge-to="s1" data-edge-label="after 11am CT" data-edge-key="4" data-edge-id="e5" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="646,517;646,615;825,615" d="M 646 517 L 646 615 L 825 615" class="r"="edge" style="--step:4" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/><path data-edge-from="s1" data-edge-to="d1" data-edge-label="decide" data-edge-key="5" data-edge-id="e6" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="900,641;900,739;1029,739" d="M 900 641 L 900 739 L 1029 739" class="r"="edge" style="--step:5" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/><g id="node-r1" data-node-id="r1" data-node-label="Map 8 competitors" tabindex="0" role="button" aria-label="Focus Map 8 competitors, descriptions, pricing, links, Research › Phase 1: Competitor mapping" aria-pressed="false" data-node-kind="backend" data-node-sublabel="descriptions, pricing, links" data-node-context="Research › Phase 1: Competitor mapping"><title>Map 8 competitors · descriptions, pricing, links · Research › Phase 1: Competitor mapping</title><rect x="48" y="93" width="150" height="52" rx="6" class="h"/><rect x="48" y="93" width="150" height="52" rx="6" class="c"="node" style="--step:0" stroke-width="1.5"/><g class="ab w" transform="translate(54 99) scale(0.6875)"><path d="M6 3 3 8l3 5M10 3l3 5-3 5"/></g><text data-node-label="" data-detail-anchor="" x="123" y="114" class="k" font-size="11" font-weight="600" text-anchor="middle">Map 8 competitors</text><text data-detail="context" x="123" y="131" class="j" font-size="8" text-anchor="middle">descriptions, pricing, links</text></g><g id="node-t1" data-node-id="t1" data-node-label="Build intel tracker" tabindex="0" role="button" aria-label="Focus Build intel tracker, cards, meetings, links, Tracker › Phase 1: Competitor mapping" aria-pressed="false" data-node-kind="database" data-node-sublabel="cards, meetings, links" data-node-context="Tracker › Phase 1: Competitor mapping"><title>Build intel tracker · cards, meetings, links · Tracker › Phase 1: Competitor mapping</title><rect x="48" y="217" width="150" height="52" rx="6" class="h"/><rect x="48" y="217" width="150" height="52" rx="6" class="f"="node" style="--step:1" stroke-width="1.5"/><g class="ab z" transform="translate(54 223) scale(0.6875)"><ellipse cx="8" cy="4" rx="5" ry="2"/><path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/></g><text data-node-label="" data-detail-anchor="" x="129" y="238" class="k" font-size="11" font-weight="600" text-anchor="middle">Build intel tracker</text><text data-detail="context" x="123" y="255" class="j" font-size="8" text-anchor="middle">cards, meetings, links</text></g><g id="node-o1" data-node-id="o1" data-node-label="Book demos and email" tabindex="0" role="button" aria-label="Focus Book demos and email, demo pages and published emails, Outreach › Phase 2: Outreach and booking" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="demo pages and published emails" data-node-context="Outreach › Phase 2: Outreach and booking"><title>Book demos and email · demo pages and published emails · Outreach › Phase 2: Outreach and booking</title><rect x="235" y="341" width="150" height="52" rx="6" class="h"/><rect x="235" y="341" width="150" height="52" rx="6" class="d"="node" style="--step:2" stroke-width="1.5"/><g class="ab x" transform="translate(241 347) scale(0.6875)"><rect x="2" y="3" width="12" height="10" rx="2"/><path d="M2 6.5h12"/><circle cx="4.1" cy="4.8" r=".7" class="ac"/><circle cx="6.3" cy="4.8" r=".7" class="ac"/></g><text data-node-label="" data-detail-anchor="" x="310" y="373" class="k" font-size="11" font-weight="600" text-anchor="middle">Book demos and email</text><text data-detail="context" x="310" y="387" class="j" font-size="7.6" text-anchor="middle">demo pages and published emails</text></g><g id="node-o3" data-node-id="o3" data-node-label="Submit contact forms" tabindex="0" role="button" aria-label="Focus Submit contact forms, competitors with no public email, Outreach › Phase 2: Outreach and booking" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="competitors with no public email" data-node-context="Outreach › Phase 2: Outreach and booking"><title>Submit contact forms · competitors with no public email · Outreach › Phase 2: Outreach and booking</title><rect x="451" y="341" width="150" height="52" rx="6" class="h"/><rect x="451" y="341" width="150" height="52" rx="6" class="d"="node" style="--step:3" stroke-width="1.5"/><g class="ab x" transform="translate(457 347) scale(0.6875)"><rect x="2" y="3" width="12" height="10" rx="2"/><path d="M2 6.5h12"/><circle cx="4.1" cy="4.8" r=".7" class="ac"/><circle cx="6.3" cy="4.8" r=".7" class="ac"/></g><text data-node-label="" data-detail-anchor="" x="526" y="373" class="k" font-size="11" font-weight="600" text-anchor="middle">Submit contact forms</text><text data-detail="context" x="526" y="387" class="j" font-size="7.3" text-anchor="middle">competitors with no public email</text></g><g id="node-c1" data-node-id="c1" data-node-label="Zoom demos" tabindex="0" role="button" aria-label="Focus Zoom demos, Avinash + Prabhat, after 11am CT, Demos and calls › Phase 3: Demos Thu Oct 1 after 11am CT" aria-pressed="false" data-node-kind="external" data-node-sublabel="Avinash + Prabhat, after 11am CT" data-node-context="Demos and calls › Phase 3: Demos Thu Oct 1 after 11am CT"><title>Zoom demos · Avinash + Prabhat, after 11am CT · Demos and calls › Phase 3: Demos Thu Oct 1 after 11am CT</title><rect x="571" y="465" width="150" height="52" rx="6" class="h"/><rect x="571" y="465" width="150" height="52" rx="6" class="e"="node" style="--step:4" stroke-width="1.5"/><g class="ab y" transform="translate(577 471) scale(0.6875)"><rect x="2.5" y="5" width="8.5" height="8" rx="1.5"/><path d="M8 2.5h5.5V8M13 2.5 7.5 8.5"/></g><text data-node-label="" data-detail-anchor="" x="646" y="486" class="k" font-size="11" font-weight="600" text-anchor="middle">Zoom demos</text><text data-detail="context" x="646" y="503" class="j" font-size="7.3" text-anchor="middle">Avinash + Prabhat, after 11am CT</text></g><g id="node-s1" data-node-id="s1" data-node-label="Debrief and synthesize" tabindex="0" role="button" aria-label="Focus Debrief and synthesize, pricing, flows, gaps, Debrief › Phase 4: Debrief and synthesis" aria-pressed="false" data-node-kind="backend" data-node-sublabel="pricing, flows, gaps" data-node-context="Debrief › Phase 4: Debrief and synthesis"><title>Debrief and synthesize · pricing, flows, gaps · Debrief › Phase 4: Debrief and synthesis</title><rect x="825" y="589" width="150" height="52" rx="6" class="h"/><rect x="825" y="589" width="150" height="52" rx="6" class="c"="node" style="--step:5" stroke-width="1.5"/><g class="ab w" transform="translate(831 595) scale(0.6875)"><path d="M6 3 3 8l3 5M10 3l3 5-3 5"/></g><text data-node-label="" data-detail-anchor="" x="900" y="620" class="k" font-size="10" font-weight="600" text-anchor="middle">Debrief and synthesize</text><text data-detail="context" x="900" y="635" class="j" font-size="8" text-anchor="middle">pricing, flows, gaps</text></g><g id="node-d1" data-node-id="d1" data-node-label="Decide wedge" tabindex="0" role="button" aria-label="Focus Decide wedge, ConfirmLayer positioning, Decision › Phase 5: Tracker built and decisions" aria-pressed="false" data-node-kind="security" data-node-sublabel="ConfirmLayer positioning" data-node-context="Decision › Phase 5: Tracker built and decisions"><title>Decide wedge · ConfirmLayer positioning · Decision › Phase 5: Tracker built and decisions</title><rect x="1029" y="713" width="150" height="52" rx="6" class="h"/><rect x="1029" y="713" width="150" height="52" rx="6" class="g"="node" style="--step:6" stroke-width="1.5"/><g class="ab aa" transform="translate(1035 719) scale(0.6875)"><path d="M8 2.2 13 4v3.5c0 3.1-1.8 5.4-5 6.5-3.2-1.1-5-3.4-5-6.5V4Z"/><path d="m5.8 8 1.5 1.5 3-3"/></g><text data-node-label="" data-detail-anchor="" x="1104" y="734" class="k" font-size="11" font-weight="600" text-anchor="middle">Decide wedge</text><text data-detail="context" x="1104" y="751" class="j" font-size="8" text-anchor="middle">ConfirmLayer positioning</text></g><g data-detail="context" data-edge-from="r1" data-edge-to="t1" data-edge-label="mapped" data-edge-key="0" data-edge-id="e1"><rect x="679" y="99" width="38" height="14" rx="3" class="h"/><text x="699" y="109" class="n" font-size="8" text-anchor="middle">mapped</text></g><g data-detail="context" data-edge-from="t1" data-edge-to="o1" data-edge-label="demo pages, emails" data-edge-key="1" data-edge-id="e2"><rect x="168" y="270" width="96" height="14" rx="3" class="h"/><text x="216" y="280" class="o" font-size="8" text-anchor="middle">demo pages, emails</text></g><g data-detail="context" data-edge-from="o1" data-edge-to="o3" data-edge-label="then forms" data-edge-key="2" data-edge-id="e3"><rect x="389" y="347" width="58" height="14" rx="3" class="h"/><text x="418" y="357" class="n" font-size="8" text-anchor="middle">then forms</text></g><g data-detail="context" data-edge-from="c1" data-edge-to="s1" data-edge-label="after 11am CT" data-edge-key="4" data-edge-id="e5"><rect x="699" y="595" width="72" height="14" rx="3" class="h"/><text x="735" y="605" class="o" font-size="8" text-anchor="middle">after 11am CT</text></g><g data-detail="context" data-edge-from="s1" data-edge-to="d1" data-edge-label="decide" data-edge-key="5" data-edge-id="e6"><rect x="945" y="719" width="38" height="14" rx="3" class="h"/><text x="965" y="729" class="o" font-size="8" text-anchor="middle">decide</text></g><g data-legend="" data-legend-bridge=""><text x="20" y="800" class="k" font-size="12" font-weight="650">Legend</text><g data-legend-semantic-kind="frontend" data-legend-kind="frontend" data-legend-label="User UI" data-legend-x="20" data-legend-baseline="820" data-legend-width="74"><rect x="20" y="812" width="14" height="9" rx="2" class="d" stroke-width="1"/><text x="42" y="820" class="j" font-size="7.5" font-weight="500">User UI</text></g><g data-legend-semantic-kind="backend" data-legend-kind="backend" data-legend-label="Agent logic" data-legend-x="101" data-legend-baseline="820" data-legend-width="91"><rect x="101" y="812" width="14" height="9" rx="2" class="c" stroke-width="1"/><text x="123" y="820" class="j" font-size="7.5" font-weight="500">Agent logic</text></g><g data-legend-semantic-kind="security" data-legend-kind="security" data-legend-label="Policy" data-legend-x="199" data-legend-baseline="820" data-legend-width="70"><rect x="199" y="812" width="14" height="9" rx="2" class="g" stroke-width="1"/><text x="221" y="820" class="j" font-size="7.5" font-weight="500">Policy</text></g><g data-legend-semantic-kind="database" data-legend-kind="database" data-legend-label="Context / trace" data-legend-x="276" data-legend-baseline="820" data-legend-width="109"><rect x="276" y="812" width="14" height="9" rx="2" class="f" stroke-width="1"/><text x="298" y="820" class="j" font-size="7.5" font-weight="500">Context / trace</text></g><g data-legend-semantic-kind="external" data-legend-kind="external" data-legend-label="External system" data-legend-x="392" data-legend-baseline="820" data-legend-width="109"><rect x="392" y="812" width="14" height="9" rx="2" class="e" stroke-width="1"/><text x="414" y="820" class="j" font-size="7.5" font-weight="500">External system</text></g></g></svg></div><div class="legend"><span><span class="sw" style="background:#0d9488"></span>User UI</span><span><span class="sw" style="background:#2563eb"></span>Agent logic</span><span><span class="sw" style="background:#7c3aed"></span>Policy</span><span><span class="sw" style="background:#d97706"></span>Context / trace</span><span><span class="sw" style="background:#64748b"></span>External system</span></div><div class="how"><b>How to read it:</b> left to right across 5 phases, top to bottom within each phase. Teal nodes are user-facing surfaces, blue is agent logic, violet is policy gates, amber carries context and traces, gray boxes are external systems.</div></div></section><section class="panel" id="panel-links"><h2 class="sec">All links</h2><p class="sub">21 researched URLs, verbatim from research. Grouped by competitor.</p><div class="card"><h3>AgeChecker.Net</h3><div class="lnk"><a href="https://agechecker.net/">https://agechecker.net/</a><span class="lt">Website</span><p>Official website.</p></div><div class="lnk"><a href="https://agechecker.net/demo">https://agechecker.net/demo</a><span class="lt">Demo</span><p>Demo page; phone 1-888-276-2303 also published there.</p></div><div class="lnk"><a href="https://apps.shopify.com/agechecker-net?surface_intra_position=1&surface_type=partners&surface_version=redesign">https://apps.shopify.com/agechecker-net</a><span class="lt">Shopify</span><p>Shopify App Store listing.</p></div></div><div class="card"><h3>BlueCheck</h3><div class="lnk"><a href="https://www.bluecheck.me">https://www.bluecheck.me</a><span class="lt">Website</span><p>Official website.</p></div><div class="lnk"><a href="https://www.bluecheck.me/ecommerce-age-verification">https://www.bluecheck.me/ecommerce-age-verification</a><span class="lt">Product</span><p>E-commerce age-verification page.</p></div><div class="lnk"><a href="https://apps.shopify.com/bluecheck-age-verification?locale=nb&surface_detail=orders-and-shipping-orders-order-editing&surface_inter_position=1&surface_intra_position=8&surface_type=category&surface_version=redesign">https://apps.shopify.com/bluecheck-age-verification</a><span class="lt">Shopify</span><p>Shopify App Store listing.</p></div><div class="lnk"><a href="https://wordpress.org/plugins/bluecheck-age-verification/">https://wordpress.org/plugins/bluecheck-age-verification/</a><span class="lt">Plugin</span><p>WordPress plugin page; merchant@bluecheck.me published here.</p></div></div><div class="card"><h3>AgeChecked</h3><div class="lnk"><a href="https://www.agechecked.com">https://www.agechecked.com</a><span class="lt">Website</span><p>Official website.</p></div><div class="lnk"><a href="https://www.agechecked.com/shopify-age-verification/">https://www.agechecked.com/shopify-age-verification/</a><span class="lt">Shopify</span><p>Shopify product page.</p></div><div class="lnk"><a href="https://www.agechecked.com/agechecked-for-ecommerce/">https://www.agechecked.com/agechecked-for-ecommerce/</a><span class="lt">Product</span><p>E-commerce page.</p></div><div class="lnk"><a href="https://www.agechecked.com/woocommerce-plugin/">https://www.agechecked.com/woocommerce-plugin/</a><span class="lt">Plugin</span><p>WooCommerce plugin page.</p></div></div><div class="card"><h3>Veratad</h3><div class="lnk"><a href="https://veratad.com/">https://veratad.com/</a><span class="lt">Website</span><p>Official website.</p></div><div class="lnk"><a href="https://veratad.com/solutions">https://veratad.com/solutions</a><span class="lt">Product</span><p>Solutions page, Age Verification section.</p></div></div><div class="card"><h3>Persona</h3><div class="lnk"><a href="https://withpersona.com/">https://withpersona.com/</a><span class="lt">Website</span><p>Official website.</p></div><div class="lnk"><a href="https://withpersona.com/pricing">https://withpersona.com/pricing</a><span class="lt">Pricing</span><p>Pricing page URL appeared verbatim in an official withpersona.com search result; page itself not fetched.</p></div></div><div class="card"><h3>Veriff</h3><div class="lnk"><a href="https://www.veriff.com/">https://www.veriff.com/</a><span class="lt">Website</span><p>Official website.</p></div><div class="lnk"><a href="https://www.veriff.com/use-cases/kyc">https://www.veriff.com/use-cases/kyc</a><span class="lt">Product</span><p>KYC use-case page, relevant to age verification.</p></div></div><div class="card"><h3>ID Analyzer</h3><div class="lnk"><a href="https://www.idanalyzer.com">https://www.idanalyzer.com</a><span class="lt">Website</span><p>Official website, verified via the fetched pricing page.</p></div><div class="lnk"><a href="https://www.idanalyzer.com/en/pricing">https://www.idanalyzer.com/en/pricing</a><span class="lt">Pricing</span><p>Pricing page; $0.30 per check observed.</p></div></div><div class="card"><h3>Verifymy</h3><div class="lnk"><a href="https://verifymyage.nl">https://verifymyage.nl</a><span class="lt">Website</span><p>Official website, verified via the fetched pricing page.</p></div><div class="lnk"><a href="https://verifymyage.nl/pricing">https://verifymyage.nl/pricing</a><span class="lt">Pricing</span><p>Pricing page; about $0.42 per check observed.</p></div></div></section></div></main><footer><div class="wrap">ConfirmLayer competitor intel &middot; researched Sep 30, 2026 &middot; pricing: reverify before external use.</div></footer>
 <script>
-  (function () {
-    var btns = document.querySelectorAll('.tab-btn');
-    function show(name) {
-      btns.forEach(function (b) { b.classList.toggle('active', b.dataset.tab === name); });
-      document.querySelectorAll('.tab-panel').forEach(function (p) {
-        p.classList.toggle('active', p.id === 'panel-' + name);
-      });
-    }
-    btns.forEach(function (b) { b.addEventListener('click', function () { show(b.dataset.tab); }); });
-    document.querySelectorAll('.stage[data-goto]').forEach(function (s) {
-      s.addEventListener('click', function () { show(s.dataset.goto); window.scrollTo({ top: 0, behavior: 'smooth' }); });
-    });
-  })();
+var V=[["AgeChecker.Net","Email","contact@agechecker.net","Demo call"],["BlueCheck","Email","merchant@bluecheck.me","Demo call"],["Veratad","Email","Info@veratad.com","Demo call"],["Persona","Email","startups@withpersona.com","Startup plan demo"],["AgeChecked","Web form","","Demo call"],["ID Analyzer","Web form","","Demo call"],["Veriff","Web form","","Demo call"],["Verifymy","Web form","","Demo call"]];
+(function(){var s=document.getElementById("tb-status");if(s){s.innerHTML=V.map(function(v){return '<tr><td><b>'+v[0]+'</b></td><td>'+v[1]+'</td><td>Sep 30</td><td><span class="pill p-pend">Awaiting reply</span></td></tr>'}).join('')}
+var p=document.getElementById("tb-pipe");if(p){p.innerHTML=V.map(function(v){var ch=v[1]==="Email"?"Email to "+v[2]:"Web form";return '<tr><td><b>'+v[0]+'</b></td><td>'+ch+'</td><td>'+v[3]+'</td><td><span class="pill p-pend">Contacted</span></td><td>Await reply; propose Thu Oct 1 after 11am CT</td></tr>'}).join('')}})();
 </script>
-</body>
-</html>
+<script>
+document.querySelectorAll('.tab').forEach(function(b){b.addEventListener('click',function(){
+document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('active')});
+b.classList.add('active');
+document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active')});
+document.getElementById('panel-'+b.dataset.tab).classList.add('active');
+window.scrollTo({top:0,behavior:'smooth'});});});
+var FD={
+identified:{t:'Identified',h:'8 of 8 advanced',rows:[['AgeChecker.Net','Mapped'],['BlueCheck','Mapped'],['Veratad','Mapped'],['Persona','Mapped'],['AgeChecked','Mapped'],['ID Analyzer','Mapped'],['Veriff','Mapped'],['Verifymy','Mapped']]},
+contacted:{t:'Contacted',h:'0 advanced, 8 pending, 0 dropped',rows:[['AgeChecker.Net','Email sent Sep 30'],['BlueCheck','Email sent Sep 30'],['Veratad','Email sent Sep 30'],['Persona','Email sent Sep 30'],['AgeChecked','Form sent Sep 30'],['ID Analyzer','Form sent Sep 30'],['Veriff','Form sent Sep 30'],['Verifymy','Form sent Sep 30']]},
+replied:{t:'Reply received',h:'No records yet',rows:[]},
+booked:{t:'Call booked',h:'No records yet',rows:[]}};
+function showStage(k){var d=FD[k],h='<b>'+d.t+'</b> <span class="pill '+(d.rows.length?'p-pend':'p-none')+'">'+d.h+'</span>';
+if(d.rows.length){h+='<table class="t" style="margin-top:10px"><tbody>'+d.rows.map(function(r){return '<tr><td><b>'+r[0]+'</b></td><td>'+r[1]+'</td></tr>'}).join('')+'</tbody></table>'}else{h+='<p class="sub" style="margin:8px 0 0">Nothing here yet. Replies land here via the morning inbox watch.</p>'}
+document.getElementById('fdetail').innerHTML=h;
+document.querySelectorAll('.fstage').forEach(function(x){x.classList.toggle('sel',x.dataset.s===k)})}
+document.querySelectorAll('.fstage').forEach(function(x){x.addEventListener('click',function(){showStage(x.dataset.s)})});
+showStage('identified');
+</script>
+</body></html>
