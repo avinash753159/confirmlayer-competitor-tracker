@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ConfirmLayer Competitor Intel Tracker</title>
+<style>
+  :root {
+    --navy: #123a5c;
+    --navy-dark: #0d2c47;
+    --teal: #0f8a80;
+    --teal-light: #e6f4f2;
+    --bg: #f7fafc;
+    --card: #ffffff;
+    --ink: #1f2a37;
+    --muted: #5b6b7b;
+    --line: #dfe7ee;
+    --green: #15803d;
+    --green-bg: #e8f6ec;
+    --amber: #b45309;
+    --amber-bg: #fdf3e3;
+    --gray: #64748b;
+    --gray-bg: #eef2f7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.55;
+  }
+  header.hero {
+    background: linear-gradient(135deg, var(--navy-dark), var(--navy) 60%, #155e6b);
+    color: #fff;
+    padding: 2.2rem 1.25rem 1.6rem;
+  }
+  header.hero .wrap { max-width: 1080px; margin: 0 auto; }
+  header.hero h1 { margin: 0 0 0.35rem; font-size: 1.9rem; letter-spacing: 0.01em; }
+  header.hero p { margin: 0.25rem 0; color: #cfe3ee; }
+  header.hero .meta { font-size: 0.85rem; color: #a9c6d8; }
+  nav.tabs {
+    background: var(--card);
+    border-bottom: 1px solid var(--line);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  nav.tabs .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.5rem 1.25rem;
+    overflow-x: auto;
+  }
+  .tab-btn {
+    border: 1px solid transparent;
+    background: none;
+    padding: 0.6rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--muted);
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { background: var(--gray-bg); color: var(--ink); }
+  .tab-btn.active {
+    background: var(--teal-light);
+    color: var(--navy-dark);
+    border-color: #bfe3de;
+  }
+  main .wrap { max-width: 1080px; margin: 0 auto; padding: 1.5rem 1.25rem 3rem; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  .tab-panel h2 { color: var(--navy); margin-top: 0.25rem; }
+  .phase {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1.1rem 1.25rem;
+    margin-bottom: 0.9rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  .phase-num {
+    flex: 0 0 auto;
+    width: 2.1rem; height: 2.1rem;
+    border-radius: 50%;
+    background: var(--navy);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+  }
+  .phase h3 { margin: 0 0 0.25rem; font-size: 1.05rem; color: var(--navy-dark); }
+  .phase p { margin: 0; color: var(--muted); font-size: 0.95rem; }
+  .pill {
+    display: inline-block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    margin-top: 0.45rem;
+  }
+  .pill.done { background: var(--green-bg); color: var(--green); }
+  .pill.progress { background: var(--amber-bg); color: var(--amber); }
+  .pill.pending { background: var(--gray-bg); color: var(--gray); }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1.15rem 1.25rem;
+  }
+  .card h3 { margin: 0 0 0.3rem; color: var(--navy-dark); font-size: 1.15rem; }
+  .card .desc { margin: 0 0 0.6rem; color: var(--muted); font-size: 0.93rem; }
+  .card .pricing { margin: 0 0 0.7rem; font-size: 0.9rem; }
+  .card .pricing strong { color: var(--navy-dark); }
+  .links { list-style: none; margin: 0; padding: 0; font-size: 0.9rem; }
+  .links li { margin: 0.3rem 0; }
+  .links .lbl {
+    display: inline-block;
+    min-width: 9.5rem;
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .links a { color: var(--teal); word-break: break-all; }
+  .links a:hover { color: var(--navy); }
+  .notpub { color: var(--gray); font-style: italic; }
+  table.meetings {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    font-size: 0.93rem;
+  }
+  table.meetings th, table.meetings td {
+    text-align: left;
+    padding: 0.75rem 0.9rem;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  table.meetings th {
+    background: var(--navy);
+    color: #fff;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  table.meetings tr:last-child td { border-bottom: none; }
+  .note {
+    background: var(--teal-light);
+    border: 1px solid #bfe3de;
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    color: var(--navy-dark);
+    font-size: 0.93rem;
+    margin-bottom: 1.2rem;
+  }
+  .flow-wrap {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1rem;
+    overflow-x: auto;
+  }
+  .flow-wrap svg { max-width: 100%; height: auto; display: block; }
+  .link-group {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .link-group h3 { margin: 0 0 0.5rem; color: var(--navy-dark); }
+  footer {
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 0.85rem;
+    padding: 1.2rem 1.25rem 2rem;
+  }
+  footer .wrap { max-width: 1080px; margin: 0 auto; }
+  @media (max-width: 640px) {
+    header.hero h1 { font-size: 1.5rem; }
+    .phase { flex-direction: column; gap: 0.5rem; }
+    .links .lbl { display: block; min-width: 0; }
+    table.meetings { font-size: 0.85rem; }
+    table.meetings th, table.meetings td { padding: 0.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<script>
+/* MEETINGS: single source of truth for outreach status. Update the "status"
+   field per competitor as outreach progresses. Valid values:
+   "pending", "sent", "booked", "done", "no reply". */
+const MEETINGS = [
+  { competitor: "AgeChecker.Net", channel: "email",        detail: "Email sent Sep 30 to contact@agechecker.net; forwarded to Prabhat", status: "sent" },
+  { competitor: "BlueCheck",      channel: "email",        detail: "Email sent Sep 30 to merchant@bluecheck.me; forwarded to Prabhat", status: "sent" },
+  { competitor: "AgeChecked",     channel: "contact form", detail: "Monday form submitted Sep 30; confirmation received", status: "sent" },
+  { competitor: "Veratad",        channel: "email",        detail: "Email sent Sep 30 to Info@veratad.com; forwarded to Prabhat", status: "sent" },
+  { competitor: "Persona",        channel: "email",        detail: "Email sent Sep 30 to startups@withpersona.com; forwarded to Prabhat", status: "sent" },
+  { competitor: "Veriff",         channel: "contact form", detail: "Contact-sales form submitted Sep 30 (prab@confirmlayer.com); Veriff replied pushing self-serve trial", status: "sent" },
+  { competitor: "ID Analyzer",    channel: "contact form", detail: "Contact form submitted Sep 30; confirmation received", status: "sent" },
+  { competitor: "Verifymy",       channel: "contact form", detail: "Form at verifymy.io/contact is an embedded HubSpot iframe; awaiting manual submit", status: "pending" }
+];
+</script>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>ConfirmLayer Competitor Intel Tracker</h1>
+    <p>Age verification competitor outreach: demos, intel, and positioning.</p>
+    <p class="meta">Researched Sep 30, 2026. Shared with Avinash Nayak and Prabhat Garg.</p>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Tracker sections">
+  <div class="wrap">
+    <button class="tab-btn active" data-tab="overview">Overview</button>
+    <button class="tab-btn" data-tab="competitors">Competitors</button>
+    <button class="tab-btn" data-tab="meetings">Meetings</button>
+    <button class="tab-btn" data-tab="flow">Flow diagram</button>
+    <button class="tab-btn" data-tab="links">Links</button>
+  </div>
+</nav>
+
+<main>
+<div class="wrap">
+
+  <section class="tab-panel active" id="tab-overview">
+    <h2>Operation phases</h2>
+    <div class="phase">
+      <div class="phase-num">1</div>
+      <div>
+        <h3>Competitor mapping</h3>
+        <p>Researched 8 competitors: what they do, pricing, and every published link captured verbatim.</p>
+        <span class="pill done">Done</span>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-num">2</div>
+      <div>
+        <h3>Outreach and booking</h3>
+        <p>Booking demos through demo pages, published sales emails, and contact forms for all 8 competitors.</p>
+        <span class="pill progress">In progress</span>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-num">3</div>
+      <div>
+        <h3>Demos and calls, Wed Sep 30 after 11am CT</h3>
+        <p>Zoom calls with Avinash and Prabhat, joining as customers to learn what each competitor does.</p>
+        <span class="pill pending">Pending</span>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-num">4</div>
+      <div>
+        <h3>Debrief and intel synthesis</h3>
+        <p>Compare pricing, verification flows, and gaps across all 8 competitors after the calls.</p>
+        <span class="pill pending">Pending</span>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-num">5</div>
+      <div>
+        <h3>Tracker live and decisions</h3>
+        <p>Keep this tracker current and lock ConfirmLayer's wedge positioning against the field.</p>
+        <span class="pill pending">Pending</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="tab-panel" id="tab-competitors">
+    <h2>Competitors</h2>
+    <div class="cards">
+
+      <div class="card">
+        <h3>AgeChecker.Net</h3>
+        <p class="desc">Age verification for Shopify and e-commerce stores with configurable age minimums and location based order blocking.</p>
+        <p class="pricing"><strong>Pricing:</strong> $25/month plus $0.50 per accepted verification, plus enabled add-ons (from the Shopify App Store listing).</p>
+        <ul class="links">
+          <li><span class="lbl">Website</span> <a href="https://agechecker.net/">https://agechecker.net/</a></li>
+          <li><span class="lbl">Pricing page</span> <span class="notpub">not published</span></li>
+          <li><span class="lbl">Shopify app</span> <a href="https://apps.shopify.com/agechecker-net?surface_intra_position=1&amp;surface_type=partners&amp;surface_version=redesign">https://apps.shopify.com/agechecker-net?surface_intra_position=1&amp;surface_type=partners&amp;surface_version=redesign</a></li>
+          <li><span class="lbl">Demo booking</span> <a href="https://agechecker.net/demo">https://agechecker.net/demo</a></li>
+          <li><span class="lbl">Contact email</span> <a href="mailto:contact@agechecker.net">contact@agechecker.net</a></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>BlueCheck</h3>
+        <p class="desc">Age verification between payment and fulfillment using order details, with SSN and photo ID fallbacks.</p>
+        <p class="pricing"><strong>Pricing:</strong> Small $25/month, Medium $100/month, Large $250/month, plus per-verification usage charges reported at about $0.50 per completed verification (from the Shopify App Store listing and third-party app review sources).</p>
+        <ul class="links">
+          <li><span class="lbl">Website</span> <a href="https://www.bluecheck.me">https://www.bluecheck.me</a></li>
+          <li><span class="lbl">E-commerce page</span> <a href="https://www.bluecheck.me/ecommerce-age-verification">https://www.bluecheck.me/ecommerce-age-verification</a></li>
+          <li><span class="lbl">Pricing page</span> <span class="notpub">not published</span></li>
+          <li><span class="lbl">Shopify app</span> <a href="https://apps.shopify.com/bluecheck-age-verification?locale=nb&amp;surface_detail=orders-and-shipping-orders-order-editing&amp;surface_inter_position=1&amp;surface_intra_position=8&amp;surface_type=category&amp;surface_version=redesign">https://apps.shopify.com/bluecheck-age-verification?locale=nb&amp;surface_detail=orders-and-shipping-orders-order-editing&amp;surface_inter_position=1&amp;surface_intra_position=8&amp;surface_type=category&amp;surface_version=redesign</a></li>
+          <li><span class="lbl">Demo booking</span> <span class="notpub">not published</span></li>
+          <li><span class="lbl">Contact email</span> <a href="mailto:merchant@bluecheck.me">merchant@bluecheck.me</a></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>AgeChecked</h3>
+        <p class="desc">UK based post checkout age verification for Shopify and WooCommerce, closest to ConfirmLayer's wedge.</p>
+        <p class="pricing"><strong>Pricing:</strong> Basic: free, then credit packs. Plus: $99.99/month. Credit packs: 100 checks $45 ($0.45/check), 250 checks $100 ($0.40/check), 500 checks $170 ($0.34/check), 1,000 checks $300 ($0.30/check). WooCommerce: starting at 40 GBP/month for 100 checks.</p>
+        <ul class="links">
+          <li><span class="lbl">Website</span> <a href="https://www.agechecked.com">https://www.agechecked.com</a></li>
+          <li><span class="lbl">Shopify page</span> <a href="https://www.agechecked.com/shopify-age-verification/">https://www.agechecked.com/shopify-age-verification/</a></li>
+          <li><span class="lbl">E-commerce page</span> <a href="https://www.agechecked.com/agechecked-for-ecommerce/">https://www.agechecked.com/agechecked-for-ecommerce/</a></li>
+          <li><span class="lbl">WooCommerce page</span> <a href="https://www.agechecked.com/woocommerce-plugin/">https://www.agechecked.com/woocommerce-plugin/</a></li>
+          <li><span class="lbl">Pricing page</span> <span class="notpub">not published</span></li>
+          <li><span class="lbl">Shopify app</span> <span class="notpub">not published</span></li>
+          <li><span class="lbl">Demo booking</span> <span class="notpub">not published</span></li>
+          <li><span class="lbl">Contact email</span> <span class="notpub">not published</span></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Veratad</h3>
+        <p class="desc">Enterprise ID and age verification API with an Age Restricted Commerce vertical.</p>
+        <p class="pricing"><strong>Pricing:</strong> None published; sales-led pricing.</p>
+        <ul class="links">
+          <li><span class="lbl">Website</span> <a href="https://veratad.com/">https://veratad.com/</a></li>
+          <li><span class="lbl">Age verification</span> <a href="https://veratad.com/solutions">https://veratad.com/solutions</a></li>
+          <li><span class="lbl">Pricing page</span> <span class="notpub">not published</span></li>
+          <li><span class="lbl">Shopify app</span> <span class="notpub">not published</span></li>
+          <li><span class="lbl">Demo booking</span> <span class="notpub">not published</span></li>
+          <li><span class="lbl">Contact email</span> <a href="mailto:Info@veratad.com">Info@veratad.com</a></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Persona</h3>
+        <p class="desc">Modular ID verification platform with government ID and selfie flows across 200+ countries.</p>
+        <p class="pricing"><strong>Pricing:</strong> Free Starter plan: 500 government ID verifications per month. Essential plan: starting at $250/month (12-month minimum term). Startup Program: up to 12 months of free core-tool access.</p>
+        <ul class="links">
+          <li><span class="lbl">Website</span> <a href="https://withpersona.com/">https://withpersona.com/</a></li>
+          <li><span class="lbl">Pricing page</span> <a href="https://withpersona.com/pricing">https://withpersona.com/pricing</a></li>
+          <li><span class="lbl">Shopify app</span> <span class="notpub">not published</span></li>
+          <li><span class="lbl">Demo booking</span> <span class="notpub">not published</span></li>
+          <li><span class="lbl">Contact email</span> <a href="mailto:startups@withpersona.com">startups@withpersona.com</a></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Veriff</h3>
+        <p class="desc">ID and biometric verification vendor with age validation for age restricted purchases.</p>
+        <p class="pricing"><strong>Pricing:</strong> None published; sales-led pricing.</p>
+        <ul class="links">
+          <li><span class="lbl">Website</span> <a href="https://www.veriff.com/">https://www.veriff.com/</a></li>
+          <li><span class="lbl">KYC use cases</span> <a href="https://www.veriff.com/use-cases/kyc">https://www.veriff.com/use-cases/kyc</a></li>
+          <li><span class="lbl">Pricing page</span> <span class="notpub">not published</span></li>
+          <li><span class="lbl">Shopify app</span> <span class="notpub">not published</span></li>
+          <li><span class="lbl">Demo booking</span> <span class="notpub">not published</span></li>
+          <li><span class="lbl">Contact email</span> <span class="notpub">not published</span></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>ID Analyzer</h3>
+        <p class="desc">Document and biometric IDV API with pay per verification and hosted verification links.</p>
+        <p class="pricing"><strong>Pricing:</strong> Plans from $89/month. Free plan: $0/month with 100 free test credits. One credit per standard ID verification; all features (OCR, biometrics, liveness, fraud, AML) bundled in every plan. 25% off annual billing.</p>
+        <ul class="links">
+          <li><span class="lbl">Website</span> <a href="https://www.idanalyzer.com">https://www.idanalyzer.com</a></li>
+          <li><span class="lbl">Pricing page</span> <a href="https://www.idanalyzer.com/en/pricing">https://www.idanalyzer.com/en/pricing</a></li>
+          <li><span class="lbl">Shopify app</span> <span class="notpub">not published</span></li>
+          <li><span class="lbl">Demo booking</span> <span class="notpub">not published</span></li>
+          <li><span class="lbl">Contact email</span> <span class="notpub">not published</span></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Verifymy (VerifyMyAge)</h3>
+        <p class="desc">Netherlands based age verification with dedicated Shopify, WooCommerce, and eBay apps.</p>
+        <p class="pricing"><strong>Pricing:</strong> Not public. Page states price varies by application/platform, means of integration, and number of monthly verifications.</p>
+        <ul class="links">
+          <li><span class="lbl">Website</span> <a href="https://verifymyage.nl">https://verifymyage.nl</a></li>
+          <li><span class="lbl">Pricing page</span> <a href="https://verifymyage.nl/pricing">https://verifymyage.nl/pricing</a></li>
+          <li><span class="lbl">Shopify app</span> <span class="notpub">not published</span></li>
+          <li><span class="lbl">Demo booking</span> <span class="notpub">not published</span></li>
+          <li><span class="lbl">Contact email</span> <span class="notpub">not published</span></li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="tab-panel" id="tab-meetings">
+    <h2>Meetings</h2>
+    <div class="note">
+      Demo and sales calls are scheduled for <strong>Wed Sep 30 after 11am CT</strong> on Zoom with
+      Avinash Nayak and Prabhat Garg. We join as customers to learn what each competitor does.
+      Statuses update in one place: the <code>MEETINGS</code> array at the top of this file.
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="meetings" id="meetings-table" aria-label="Competitor meeting outreach status">
+        <thead>
+          <tr><th>Competitor</th><th>Outreach channel</th><th>Detail</th><th>Status</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="tab-panel" id="tab-flow">
+    <h2>Flow diagram</h2>
+    <p style="color: var(--muted);">The competitor intel operation, end to end. Generated with <a href="https://github.com/tt-a1i/archify">Archify</a>.</p>
+    <div class="flow-wrap">
+<svg viewBox="0 0 1279 900" data-layout-contract="readable-v2" role="img" lang="en" aria-labelledby="archify-diagram-title archify-diagram-description" data-animation="trace" data-preset="signal-flow" data-quality-profile="showcase">
+        <title id="archify-diagram-title">ConfirmLayer Competitor Intel Operation</title>
+        <desc id="archify-diagram-description">A workflow diagram generated by Archify.</desc>
+        <!-- Definitions -->
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-default" />
+          </marker>
+          <marker id="arrowhead-emphasis" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-emphasis" />
+          </marker>
+          <marker id="arrowhead-security" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-security" />
+          </marker>
+          <marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-dashed" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" class="c-grid" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <!-- Background Grid -->
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- Swimlanes -->
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-0" x="40" y="52" width="1148" height="104" rx="10" class="c-lane" stroke-width="1"/>
+        <text x="54" y="74" class="t-dim" font-size="10" font-weight="600">01 / Research</text>
+
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-1" x="40" y="176" width="1148" height="104" rx="10" class="c-lane" stroke-width="1"/>
+        <text x="54" y="198" class="t-dim" font-size="10" font-weight="600">02 / Tracker</text>
+
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-2" x="40" y="300" width="1148" height="104" rx="10" class="c-lane" stroke-width="1"/>
+        <text x="54" y="322" class="t-dim" font-size="10" font-weight="600">03 / Outreach</text>
+
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-3" x="40" y="424" width="1148" height="104" rx="10" class="c-lane" stroke-width="1"/>
+        <text x="54" y="446" class="t-dim" font-size="10" font-weight="600">04 / Demos and calls</text>
+
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-4" x="40" y="548" width="1148" height="104" rx="10" class="c-lane" stroke-width="1"/>
+        <text x="54" y="570" class="t-dim" font-size="10" font-weight="600">05 / Debrief</text>
+
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-5" x="40" y="672" width="1148" height="104" rx="10" class="c-lane" stroke-width="1"/>
+        <text x="54" y="694" class="t-dim" font-size="10" font-weight="600">06 / Decision</text>
+
+        <!-- Phase headers -->
+        <line x1="77" y1="35" x2="236.2" y2="35" class="a-default" stroke-width="1.1"/>
+        <rect x="77" y="27" width="159.2" height="16" rx="4" class="c-mask"/>
+        <text x="156.6" y="39" class="t-muted" font-size="8" font-weight="600" text-anchor="middle">Phase 1: Competitor mapping</text>
+        <line x1="264.20000000000005" y1="35" x2="572.2" y2="35" class="a-emphasis" stroke-width="1.1"/>
+        <rect x="264.20000000000005" y="27" width="308.00000000000006" height="16" rx="4" class="c-mask"/>
+        <text x="418.20000000000005" y="39" class="t-backend" font-size="8" font-weight="600" text-anchor="middle">Phase 2: Outreach and booking</text>
+        <line x1="600.2" y1="35" x2="826.6" y2="35" class="a-emphasis" stroke-width="1.1"/>
+        <rect x="600.2" y="27" width="226.39999999999998" height="16" rx="4" class="c-mask"/>
+        <text x="713.4000000000001" y="39" class="t-backend" font-size="8" font-weight="600" text-anchor="middle">Phase 3: Demos Wed Sep 30 after 11am CT</text>
+        <line x1="854.6" y1="35" x2="1030.6" y2="35" class="a-default" stroke-width="1.1"/>
+        <rect x="854.6" y="27" width="176" height="16" rx="4" class="c-mask"/>
+        <text x="942.6" y="39" class="t-muted" font-size="8" font-weight="600" text-anchor="middle">Phase 4: Debrief and synthesis</text>
+        <line x1="1058.6" y1="35" x2="1262.6" y2="35" class="a-dashed" stroke-width="1.1"/>
+        <rect x="1058.6" y="27" width="204" height="16" rx="4" class="c-mask"/>
+        <text x="1160.6" y="39" class="t-messagebus" font-size="8" font-weight="600" text-anchor="middle">Phase 5: Tracker live and decisions</text>
+
+        <!-- Workflow groups -->
+
+
+        <!-- Edge paths -->
+        <path data-edge-from="r1" data-edge-to="t1" data-edge-label="mapped" data-edge-key="0" data-edge-id="e1" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="198,119;1200,119;1200,243;198,243" d="M 198 119 L 1200 119 L 1200 243 L 198 243" class="a-default" data-animate="edge" style="--step:0" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="t1" data-edge-to="o1" data-edge-label="demo pages, emails" data-edge-key="1" data-edge-id="e2" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="123,269;123,290;310.2,290;310.2,341" d="M 123 269 L 123 290 L 310.2 290 L 310.2 341" class="a-emphasis" data-animate="edge" style="--step:1" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="o1" data-edge-to="o3" data-edge-label="then forms" data-edge-key="2" data-edge-id="e3" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="385.2,367;451.20000000000005,367" d="M 385.2 367 L 451.20000000000005 367" class="a-default" data-animate="edge" style="--step:2" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="o3" data-edge-to="c1" data-edge-key="3" data-edge-id="e4" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="526.2,393;526.2,491;571.2,491" d="M 526.2 393 L 526.2 491 L 571.2 491" class="a-default" data-animate="edge" style="--step:3" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="c1" data-edge-to="s1" data-edge-label="after 11am CT" data-edge-key="4" data-edge-id="e5" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="646.2,517;646.2,615;825.6,615" d="M 646.2 517 L 646.2 615 L 825.6 615" class="a-emphasis" data-animate="edge" style="--step:4" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="s1" data-edge-to="d1" data-edge-label="decide" data-edge-key="5" data-edge-id="e6" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="900.6,641;900.6,739;1029.6,739" d="M 900.6 641 L 900.6 739 L 1029.6 739" class="a-emphasis" data-animate="edge" style="--step:5" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+
+        <!-- Nodes -->
+        <g id="node-r1" data-node-id="r1" data-node-label="Map 8 competitors" tabindex="0" role="button" aria-label="Focus Map 8 competitors, descriptions, pricing, links, Research › Phase 1: Competitor mapping" aria-pressed="false" data-node-kind="backend" data-node-sublabel="descriptions, pricing, links" data-node-context="Research › Phase 1: Competitor mapping">
+          <title>Map 8 competitors · descriptions, pricing, links · Research › Phase 1: Competitor mapping</title>
+          <rect x="48" y="93" width="150" height="52" rx="6" class="c-mask"/>
+          <rect x="48" y="93" width="150" height="52" rx="6" class="c-backend" data-animate="node" style="--step:0" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(54 99) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="123.1" y="114" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Map 8 competitors</text>
+          <text data-detail="context" x="123" y="131" class="t-muted" font-size="8" text-anchor="middle">descriptions, pricing, links</text>
+        </g>
+
+        <g id="node-t1" data-node-id="t1" data-node-label="Build intel tracker" tabindex="0" role="button" aria-label="Focus Build intel tracker, cards, meetings, links, Tracker › Phase 1: Competitor mapping" aria-pressed="false" data-node-kind="database" data-node-sublabel="cards, meetings, links" data-node-context="Tracker › Phase 1: Competitor mapping">
+          <title>Build intel tracker · cards, meetings, links · Tracker › Phase 1: Competitor mapping</title>
+          <rect x="48" y="217" width="150" height="52" rx="6" class="c-mask"/>
+          <rect x="48" y="217" width="150" height="52" rx="6" class="c-database" data-animate="node" style="--step:1" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(54 223) scale(0.6875)">
+            <ellipse cx="8" cy="4" rx="5" ry="2"/>
+            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="129.7" y="238" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Build intel tracker</text>
+          <text data-detail="context" x="123" y="255" class="t-muted" font-size="8" text-anchor="middle">cards, meetings, links</text>
+        </g>
+
+        <g id="node-o1" data-node-id="o1" data-node-label="Book demos and email" tabindex="0" role="button" aria-label="Focus Book demos and email, demo pages and published emails, Outreach › Phase 2: Outreach and booking" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="demo pages and published emails" data-node-context="Outreach › Phase 2: Outreach and booking">
+          <title>Book demos and email · demo pages and published emails · Outreach › Phase 2: Outreach and booking</title>
+          <rect x="235.2" y="341" width="150" height="52" rx="6" class="c-mask"/>
+          <rect x="235.2" y="341" width="150" height="52" rx="6" class="c-frontend" data-animate="node" style="--step:2" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(241.2 347) scale(0.6875)">
+            <rect x="2" y="3" width="12" height="10" rx="2"/>
+            <path d="M2 6.5h12"/>
+            <circle cx="4.1" cy="4.8" r=".7" class="sigil-fill"/>
+            <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="310.2" y="373.2" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Book demos and email</text>
+          <text data-detail="context" x="310.2" y="387.7" class="t-muted" font-size="7.6" text-anchor="middle">demo pages and published emails</text>
+        </g>
+
+        <g id="node-o3" data-node-id="o3" data-node-label="Submit contact forms" tabindex="0" role="button" aria-label="Focus Submit contact forms, competitors with no public email, Outreach › Phase 2: Outreach and booking" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="competitors with no public email" data-node-context="Outreach › Phase 2: Outreach and booking">
+          <title>Submit contact forms · competitors with no public email · Outreach › Phase 2: Outreach and booking</title>
+          <rect x="451.20000000000005" y="341" width="150" height="52" rx="6" class="c-mask"/>
+          <rect x="451.20000000000005" y="341" width="150" height="52" rx="6" class="c-frontend" data-animate="node" style="--step:3" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(457.20000000000005 347) scale(0.6875)">
+            <rect x="2" y="3" width="12" height="10" rx="2"/>
+            <path d="M2 6.5h12"/>
+            <circle cx="4.1" cy="4.8" r=".7" class="sigil-fill"/>
+            <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="526.2" y="373.2" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Submit contact forms</text>
+          <text data-detail="context" x="526.2" y="387.3" class="t-muted" font-size="7.3" text-anchor="middle">competitors with no public email</text>
+        </g>
+
+        <g id="node-c1" data-node-id="c1" data-node-label="Zoom demos" tabindex="0" role="button" aria-label="Focus Zoom demos, Avinash + Prabhat, after 11am CT, Demos and calls › Phase 3: Demos Wed Sep 30 after 11am CT" aria-pressed="false" data-node-kind="external" data-node-sublabel="Avinash + Prabhat, after 11am CT" data-node-context="Demos and calls › Phase 3: Demos Wed Sep 30 after 11am CT">
+          <title>Zoom demos · Avinash + Prabhat, after 11am CT · Demos and calls › Phase 3: Demos Wed Sep 30 after 11am CT</title>
+          <rect x="571.2" y="465" width="150" height="52" rx="6" class="c-mask"/>
+          <rect x="571.2" y="465" width="150" height="52" rx="6" class="c-external" data-animate="node" style="--step:4" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="external" class="semantic-sigil s-external" transform="translate(577.2 471) scale(0.6875)">
+            <rect x="2.5" y="5" width="8.5" height="8" rx="1.5"/>
+            <path d="M8 2.5h5.5V8M13.5 2.5 7.5 8.5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="646.2" y="486" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Zoom demos</text>
+          <text data-detail="context" x="646.2" y="503" class="t-muted" font-size="7.3" text-anchor="middle">Avinash + Prabhat, after 11am CT</text>
+        </g>
+
+        <g id="node-s1" data-node-id="s1" data-node-label="Debrief and synthesize" tabindex="0" role="button" aria-label="Focus Debrief and synthesize, pricing, flows, gaps, Debrief › Phase 4: Debrief and synthesis" aria-pressed="false" data-node-kind="backend" data-node-sublabel="pricing, flows, gaps" data-node-context="Debrief › Phase 4: Debrief and synthesis">
+          <title>Debrief and synthesize · pricing, flows, gaps · Debrief › Phase 4: Debrief and synthesis</title>
+          <rect x="825.6" y="589" width="150" height="52" rx="6" class="c-mask"/>
+          <rect x="825.6" y="589" width="150" height="52" rx="6" class="c-backend" data-animate="node" style="--step:5" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(831.6 595) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="900.6" y="620.9" class="t-primary" font-size="10.7" font-weight="600" text-anchor="middle">Debrief and synthesize</text>
+          <text data-detail="context" x="900.6" y="635.8" class="t-muted" font-size="8" text-anchor="middle">pricing, flows, gaps</text>
+        </g>
+
+        <g id="node-d1" data-node-id="d1" data-node-label="Decide wedge" tabindex="0" role="button" aria-label="Focus Decide wedge, ConfirmLayer positioning, Decision › Phase 5: Tracker live and decisions" aria-pressed="false" data-node-kind="security" data-node-sublabel="ConfirmLayer positioning" data-node-context="Decision › Phase 5: Tracker live and decisions">
+          <title>Decide wedge · ConfirmLayer positioning · Decision › Phase 5: Tracker live and decisions</title>
+          <rect x="1029.6" y="713" width="150" height="52" rx="6" class="c-mask"/>
+          <rect x="1029.6" y="713" width="150" height="52" rx="6" class="c-security" data-animate="node" style="--step:6" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(1035.6 719) scale(0.6875)">
+            <path d="M8 2.2 13 4v3.5c0 3.1-1.8 5.4-5 6.5-3.2-1.1-5-3.4-5-6.5V4Z"/>
+            <path d="m5.8 8 1.5 1.5 3-3"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="1104.6" y="734" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Decide wedge</text>
+          <text data-detail="context" x="1104.6" y="751" class="t-muted" font-size="8" text-anchor="middle">ConfirmLayer positioning</text>
+        </g>
+
+        <!-- Edge labels -->
+        <g data-detail="context" data-edge-from="r1" data-edge-to="t1" data-edge-label="mapped" data-edge-key="0" data-edge-id="e1">
+          <rect x="679.6" y="99" width="38.8" height="14" rx="3" class="c-mask"/>
+          <text x="699" y="109" class="t-edge-default" font-size="8" text-anchor="middle">mapped</text>
+        </g>
+        <g data-detail="context" data-edge-from="t1" data-edge-to="o1" data-edge-label="demo pages, emails" data-edge-key="1" data-edge-id="e2">
+          <rect x="168.4" y="270" width="96.39999999999999" height="14" rx="3" class="c-mask"/>
+          <text x="216.6" y="280" class="t-edge-emphasis" font-size="8" text-anchor="middle">demo pages, emails</text>
+        </g>
+        <g data-detail="context" data-edge-from="o1" data-edge-to="o3" data-edge-label="then forms" data-edge-key="2" data-edge-id="e3">
+          <rect x="389.20000000000005" y="347" width="58" height="14" rx="3" class="c-mask"/>
+          <text x="418.20000000000005" y="357" class="t-edge-default" font-size="8" text-anchor="middle">then forms</text>
+        </g>
+
+        <g data-detail="context" data-edge-from="c1" data-edge-to="s1" data-edge-label="after 11am CT" data-edge-key="4" data-edge-id="e5">
+          <rect x="699.7" y="595" width="72.4" height="14" rx="3" class="c-mask"/>
+          <text x="735.9000000000001" y="605" class="t-edge-emphasis" font-size="8" text-anchor="middle">after 11am CT</text>
+        </g>
+        <g data-detail="context" data-edge-from="s1" data-edge-to="d1" data-edge-label="decide" data-edge-key="5" data-edge-id="e6">
+          <rect x="945.6999999999999" y="719" width="38.8" height="14" rx="3" class="c-mask"/>
+          <text x="965.0999999999999" y="729" class="t-edge-emphasis" font-size="8" text-anchor="middle">decide</text>
+        </g>
+
+        <!-- Legend -->
+        <g data-legend="" data-legend-bridge="">
+          <text x="20" y="800" class="t-primary" font-size="12" font-weight="650">Legend</text>
+          <g data-legend-semantic-kind="frontend" data-legend-kind="frontend" data-legend-label="User UI" data-legend-x="20" data-legend-baseline="820" data-legend-width="74">
+            <rect x="20" y="812" width="14" height="9" rx="2" class="c-frontend" stroke-width="1"/>
+            <text x="42" y="820" class="t-muted" font-size="7.5" font-weight="500">User UI</text>
+          </g>
+          <g data-legend-semantic-kind="backend" data-legend-kind="backend" data-legend-label="Agent logic" data-legend-x="101" data-legend-baseline="820" data-legend-width="91">
+            <rect x="101" y="812" width="14" height="9" rx="2" class="c-backend" stroke-width="1"/>
+            <text x="123" y="820" class="t-muted" font-size="7.5" font-weight="500">Agent logic</text>
+          </g>
+          <g data-legend-semantic-kind="security" data-legend-kind="security" data-legend-label="Policy" data-legend-x="199" data-legend-baseline="820" data-legend-width="70">
+            <rect x="199" y="812" width="14" height="9" rx="2" class="c-security" stroke-width="1"/>
+            <text x="221" y="820" class="t-muted" font-size="7.5" font-weight="500">Policy</text>
+          </g>
+          <g data-legend-semantic-kind="database" data-legend-kind="database" data-legend-label="Context / trace" data-legend-x="276" data-legend-baseline="820" data-legend-width="109">
+            <rect x="276" y="812" width="14" height="9" rx="2" class="c-database" stroke-width="1"/>
+            <text x="298" y="820" class="t-muted" font-size="7.5" font-weight="500">Context / trace</text>
+          </g>
+          <g data-legend-semantic-kind="external" data-legend-kind="external" data-legend-label="External system" data-legend-x="392" data-legend-baseline="820" data-legend-width="109">
+            <rect x="392" y="812" width="14" height="9" rx="2" class="c-external" stroke-width="1"/>
+            <text x="414" y="820" class="t-muted" font-size="7.5" font-weight="500">External system</text>
+          </g>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <section class="tab-panel" id="tab-links">
+    <h2>All links</h2>
+    <p style="color: var(--muted);">Every URL captured verbatim during research, grouped by competitor.</p>
+
+    <div class="link-group">
+      <h3>AgeChecker.Net</h3>
+      <ul class="links">
+        <li><span class="lbl">Website</span> <a href="https://agechecker.net/">https://agechecker.net/</a></li>
+        <li><span class="lbl">Shopify app</span> <a href="https://apps.shopify.com/agechecker-net?surface_intra_position=1&amp;surface_type=partners&amp;surface_version=redesign">https://apps.shopify.com/agechecker-net?surface_intra_position=1&amp;surface_type=partners&amp;surface_version=redesign</a></li>
+        <li><span class="lbl">Demo booking</span> <a href="https://agechecker.net/demo">https://agechecker.net/demo</a></li>
+        <li><span class="lbl">Contact email</span> <a href="mailto:contact@agechecker.net">contact@agechecker.net</a></li>
+      </ul>
+    </div>
+
+    <div class="link-group">
+      <h3>BlueCheck</h3>
+      <ul class="links">
+        <li><span class="lbl">Website</span> <a href="https://www.bluecheck.me">https://www.bluecheck.me</a></li>
+        <li><span class="lbl">E-commerce page</span> <a href="https://www.bluecheck.me/ecommerce-age-verification">https://www.bluecheck.me/ecommerce-age-verification</a></li>
+        <li><span class="lbl">Shopify app</span> <a href="https://apps.shopify.com/bluecheck-age-verification?locale=nb&amp;surface_detail=orders-and-shipping-orders-order-editing&amp;surface_inter_position=1&amp;surface_intra_position=8&amp;surface_type=category&amp;surface_version=redesign">https://apps.shopify.com/bluecheck-age-verification?locale=nb&amp;surface_detail=orders-and-shipping-orders-order-editing&amp;surface_inter_position=1&amp;surface_intra_position=8&amp;surface_type=category&amp;surface_version=redesign</a></li>
+        <li><span class="lbl">Email source</span> <a href="https://wordpress.org/plugins/bluecheck-age-verification/">https://wordpress.org/plugins/bluecheck-age-verification/</a></li>
+        <li><span class="lbl">Contact email</span> <a href="mailto:merchant@bluecheck.me">merchant@bluecheck.me</a></li>
+      </ul>
+    </div>
+
+    <div class="link-group">
+      <h3>AgeChecked</h3>
+      <ul class="links">
+        <li><span class="lbl">Website</span> <a href="https://www.agechecked.com">https://www.agechecked.com</a></li>
+        <li><span class="lbl">Shopify page</span> <a href="https://www.agechecked.com/shopify-age-verification/">https://www.agechecked.com/shopify-age-verification/</a></li>
+        <li><span class="lbl">E-commerce page</span> <a href="https://www.agechecked.com/agechecked-for-ecommerce/">https://www.agechecked.com/agechecked-for-ecommerce/</a></li>
+        <li><span class="lbl">WooCommerce page</span> <a href="https://www.agechecked.com/woocommerce-plugin/">https://www.agechecked.com/woocommerce-plugin/</a></li>
+      </ul>
+    </div>
+
+    <div class="link-group">
+      <h3>Veratad</h3>
+      <ul class="links">
+        <li><span class="lbl">Website</span> <a href="https://veratad.com/">https://veratad.com/</a></li>
+        <li><span class="lbl">Age verification</span> <a href="https://veratad.com/solutions">https://veratad.com/solutions</a></li>
+        <li><span class="lbl">Contact email</span> <a href="mailto:Info@veratad.com">Info@veratad.com</a></li>
+      </ul>
+    </div>
+
+    <div class="link-group">
+      <h3>Persona</h3>
+      <ul class="links">
+        <li><span class="lbl">Website</span> <a href="https://withpersona.com/">https://withpersona.com/</a></li>
+        <li><span class="lbl">Pricing page</span> <a href="https://withpersona.com/pricing">https://withpersona.com/pricing</a></li>
+        <li><span class="lbl">Contact email</span> <a href="mailto:startups@withpersona.com">startups@withpersona.com</a></li>
+      </ul>
+    </div>
+
+    <div class="link-group">
+      <h3>Veriff</h3>
+      <ul class="links">
+        <li><span class="lbl">Website</span> <a href="https://www.veriff.com/">https://www.veriff.com/</a></li>
+        <li><span class="lbl">KYC use cases</span> <a href="https://www.veriff.com/use-cases/kyc">https://www.veriff.com/use-cases/kyc</a></li>
+      </ul>
+    </div>
+
+    <div class="link-group">
+      <h3>ID Analyzer</h3>
+      <ul class="links">
+        <li><span class="lbl">Website</span> <a href="https://www.idanalyzer.com">https://www.idanalyzer.com</a></li>
+        <li><span class="lbl">Pricing page</span> <a href="https://www.idanalyzer.com/en/pricing">https://www.idanalyzer.com/en/pricing</a></li>
+      </ul>
+    </div>
+
+    <div class="link-group">
+      <h3>Verifymy (VerifyMyAge)</h3>
+      <ul class="links">
+        <li><span class="lbl">Website</span> <a href="https://verifymyage.nl">https://verifymyage.nl</a></li>
+        <li><span class="lbl">Pricing page</span> <a href="https://verifymyage.nl/pricing">https://verifymyage.nl/pricing</a></li>
+      </ul>
+    </div>
+
+  </section>
+
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    ConfirmLayer competitor intel tracker. Internal use only. Link URLs are verbatim from research conducted Sep 30, 2026.
+  </div>
+</footer>
+
+<script>
+(function () {
+  var buttons = document.querySelectorAll('.tab-btn');
+  var panels = document.querySelectorAll('.tab-panel');
+  buttons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      buttons.forEach(function (b) { b.classList.remove('active'); });
+      panels.forEach(function (p) { p.classList.remove('active'); });
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.getAttribute('data-tab')).classList.add('active');
+    });
+  });
+
+  var pillClass = { pending: 'pending', sent: 'progress', booked: 'progress', done: 'done', 'no reply': 'pending' };
+  var tbody = document.querySelector('#meetings-table tbody');
+  MEETINGS.forEach(function (m) {
+    var tr = document.createElement('tr');
+    var cls = pillClass[m.status] || 'pending';
+    tr.innerHTML =
+      '<td><strong>' + m.competitor + '</strong></td>' +
+      '<td>' + m.channel + '</td>' +
+      '<td>' + m.detail + '</td>' +
+      '<td><span class="pill ' + cls + '">' + m.status + '</span></td>';
+    tbody.appendChild(tr);
+  });
+})();
+</script>
+
+</body>
+</html>
